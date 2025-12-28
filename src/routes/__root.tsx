@@ -1,12 +1,17 @@
+import * as React from 'react'
+
 import { TanStackDevtools } from '@tanstack/react-devtools'
-import { HeadContent, Scripts, createRootRoute } from '@tanstack/react-router'
+import {
+  HeadContent,
+  Outlet,
+  Scripts,
+  createRootRoute,
+  redirect,
+} from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 
-import appCss from '../styles.css?url'
-
-import { Outlet, redirect } from '@tanstack/react-router'
-import * as React from 'react'
 import { checkUserExists, getSession } from '../server/functions/auth'
+import appCss from '../styles.css?url'
 
 export const Route = createRootRoute({
   head: () => ({
@@ -20,12 +25,6 @@ export const Route = createRootRoute({
       },
       {
         title: 'Debt Tracker',
-      },
-    ],
-    links: [
-      {
-        rel: 'stylesheet',
-        href: appCss,
       },
     ],
   }),
@@ -58,30 +57,24 @@ export const Route = createRootRoute({
     </div>
   ),
 
+  notFoundComponent: () => (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="text-center">
+        <h1 className="text-6xl font-display font-bold text-ink mb-4">404</h1>
+        <p className="text-muted-foreground text-lg">Page not found</p>
+      </div>
+    </div>
+  ),
+
   shellComponent: RootDocument,
 })
 
 function RootDocument({ children }: { children: React.ReactNode }) {
-  // #region agent log
-  React.useEffect(() => {
-    fetch('http://127.0.0.1:7244/ingest/17bb0030-c9b7-4ca8-8601-8dba0f964744', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        location: '__root.tsx:RootDocument',
-        message: 'RootDocument rendered/mounted',
-        data: {},
-        timestamp: Date.now(),
-        sessionId: 'debug-session',
-        hypothesisId: 'F',
-      }),
-    }).catch(() => {})
-  })
-  // #endregion
   return (
     <html lang="en">
       <head>
         <HeadContent />
+        <link rel="stylesheet" href={appCss} />
       </head>
       <body>
         {children}
