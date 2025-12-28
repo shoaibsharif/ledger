@@ -1,0 +1,22 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "expense-tracker",
+  "compatibility_date": "2025-12-28",
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "main": "@tanstack/react-start/server-entry",
+  "observability": {
+    "enabled": true
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "expense-tracker-db",
+      "database_id": "717e6172-bf8b-4b66-b5fe-03e77a1c6e8a"
+    }
+  ],
+  "vars": {
+    "AUTH_EMAIL": "you@example.com"
+  }
+}
