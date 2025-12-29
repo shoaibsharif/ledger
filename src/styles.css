@@ -1,72 +1,94 @@
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400..800&family=Manrope:wght@200..800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;700;900&family=JetBrains+Mono:wght@400;500;700&display=swap');
 
-@import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
 
 @theme inline {
-    /* Fonts */
-    --font-display: 'Syne', sans-serif;
-    --font-body: 'Manrope', sans-serif;
-    --font-sans: 'Manrope', sans-serif; /* Override default */
-    
-    /* Colors - Gallery / Editorial */
-    --color-canvas: #f0f0f0; /* Light gray base */
-    --color-surface: #ffffff;
-    --color-ink: #0a0a0a;
-    --color-accent: #ff4d00; /* International Orange */
-    --color-metric: #00fa9a; /* Spring Green for positive flows */
-    
-    /* Mapping to shadcn vars for compatibility */
-    --color-background: var(--color-canvas);
-    --color-foreground: var(--color-ink);
-    --color-card: var(--color-surface);
-    --color-card-foreground: var(--color-ink);
-    --color-popover: var(--color-surface);
-    --color-popover-foreground: var(--color-ink);
-    --color-primary: var(--color-ink);
-    --color-primary-foreground: var(--color-surface);
-    --color-muted: #e5e5e5;
-    --color-muted-foreground: #737373;
-    --color-border: #d4d4d4;
-    --color-input: #d4d4d4;
-    --color-ring: var(--color-ink);
-    
-    --radius: 1rem;
+  --font-display: 'Archivo', sans-serif;
+  --font-body: 'Archivo', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-sans: 'Archivo', sans-serif;
+
+  --color-ink: #0a0a0a;
+  --color-paper: #f5f0e8;
+  --color-crimson: #c41e3a;
+  --color-forest: #1a4a3a;
+  --color-void: #0d0d0d;
+  --color-orange: #ff4f00;
+
+  --color-background: var(--color-paper);
+  --color-foreground: var(--color-ink);
+  --color-card: var(--color-ink);
+  --color-card-foreground: var(--color-paper);
+  --color-popover: var(--color-paper);
+  --color-popover-foreground: var(--color-ink);
+  --color-primary: var(--color-ink);
+  --color-primary-foreground: var(--color-paper);
+  --color-muted: #d4cfc5;
+  --color-muted-foreground: #6b6560;
+  --color-border: var(--color-ink);
+  --color-input: var(--color-ink);
+  --color-ring: var(--color-crimson);
+
+  --radius: 0px;
 }
 
 @layer base {
-  body {
-    @apply font-body bg-canvas text-ink antialiased;
-    background-image: radial-gradient(#d4d4d4 1px, transparent 1px);
-    background-size: 24px 24px;
-    /* Smooth scroll behavior */
-    scroll-behavior: smooth;
+  * {
+    border-color: var(--color-ink) !important;
   }
 
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-display font-bold;
+  body {
+    @apply font-body bg-paper text-ink antialiased;
+    font-feature-settings: 'ss01', 'ss02';
+  }
+
+  ::selection {
+    background: var(--color-crimson);
+    color: white;
   }
 }
 
 @layer utilities {
-    .text-display-huge {
-        font-family: 'Syne', sans-serif;
-        font-weight: 800;
-        line-height: 0.9;
-        letter-spacing: -0.04em;
-    }
-    
-    .glass-panel {
-        @apply bg-surface/80 backdrop-blur-md border border-white/20 shadow-xl;
-    }
+  .font-mono-tight {
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: -0.02em;
+  }
 
-    /* Custom scrollbar hiding */
-    .no-bar::-webkit-scrollbar {
-        display: none;
-    }
-    .no-bar {
-        -ms-overflow-style: none;
-        scrollbar-width: none;
-    }
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .ledger-line {
+    background-image: repeating-linear-gradient(
+      to bottom,
+      transparent,
+      transparent 1.937rem,
+      var(--color-ink) 1.937rem,
+      var(--color-ink) 2rem
+    );
+  }
+
+  .heavy-border {
+    border: 3px solid var(--color-ink);
+  }
+
+  .heavy-border-b {
+    border-bottom: 3px solid var(--color-ink);
+  }
+
+  .heavy-border-t {
+    border-top: 3px solid var(--color-ink);
+  }
+
+  .striped-bg {
+    background: repeating-linear-gradient(
+      45deg,
+      transparent,
+      transparent 10px,
+      rgba(0, 0, 0, 0.02) 10px,
+      rgba(0, 0, 0, 0.02) 20px
+    );
+  }
 }

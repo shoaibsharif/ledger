@@ -18,7 +18,7 @@ import {
 import { cn } from '@/lib/utils'
 import { createDebt } from '@/server/functions/debts'
 import { createPerson, getPeople } from '@/server/functions/people'
-import { ArrowLeft02Icon, Tick02Icon } from '@hugeicons/core-free-icons'
+import { Tick02Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 import { useForm } from '@tanstack/react-form'
 import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
@@ -44,7 +44,6 @@ function AddDebt() {
 
   const [isCreatingPerson, setIsCreatingPerson] = useState(false)
   const [newPersonName, setNewPersonName] = useState('')
-  const [isSubmittingPerson, setIsSubmittingPerson] = useState(false)
 
   const form = useForm({
     defaultValues: {
@@ -70,7 +69,6 @@ function AddDebt() {
 
   const handleCreatePerson = async (setFieldValue: (val: string) => void) => {
     if (!newPersonName.trim()) return
-    setIsSubmittingPerson(true)
     try {
       const { id } = await createPerson({ data: { name: newPersonName } })
       await router.invalidate()
@@ -79,29 +77,17 @@ function AddDebt() {
       setNewPersonName('')
     } catch (error) {
       console.error('Failed to create person', error)
-    } finally {
-      setIsSubmittingPerson(false)
     }
   }
 
   return (
-    <div className="fixed inset-0 bg-canvas overflow-auto md:overflow-hidden flex flex-col md:flex-row">
-      {/* Nav: Floating "Back" Button - Absolute to be non-intrusive */}
-      <div className="absolute top-6 left-6 z-50">
-        <Button
-          variant="outline"
-          size="icon"
-          className="rounded-full w-14 h-14 bg-surface border-transparent shadow-xl hover:scale-105 transition-transform"
-        >
-          <Link to="/">
-            <HugeiconsIcon
-              icon={ArrowLeft02Icon}
-              strokeWidth={2.5}
-              className="w-6 h-6"
-            />
-          </Link>
-        </Button>
-      </div>
+    <div className="min-h-screen bg-paper flex flex-col md:flex-row">
+      <Link
+        to="/debts"
+        className="absolute top-6 left-6 z-50 font-mono text-xs uppercase tracking-widest opacity-60 hover:opacity-100 text-ink"
+      >
+        ← CANCEL
+      </Link>
 
       <form
         onSubmit={(e) => {
@@ -109,55 +95,55 @@ function AddDebt() {
           e.stopPropagation()
           form.handleSubmit()
         }}
-        className="w-full h-full flex flex-col md:flex-row"
+        className="w-full flex flex-col md:flex-row min-h-screen"
       >
-        {/* ZONE 1: THE VALUE (Left/Top) */}
         <form.Field
           name="type"
           children={(typeField) => (
             <div
               className={cn(
-                'relative w-full md:w-[55%] h-[50vh] md:h-full flex flex-col justify-center items-center p-8 transition-colors duration-700 ease-out',
+                'w-full md:w-1/2 min-h-[40vh] md:min-h-screen flex flex-col justify-center items-center p-8 md:p-12',
                 typeField.state.value === 'owed_to_me'
-                  ? 'bg-metric text-ink'
-                  : 'bg-accent text-white',
+                  ? 'bg-forest text-paper'
+                  : 'bg-crimson text-paper',
               )}
             >
-              {/* Type Toggle - Stylized */}
-              <div className="absolute top-8 right-8 flex flex-col gap-2 items-end">
+              <div className="absolute top-6 right-6 flex flex-col gap-2 items-end font-mono text-xs">
                 <button
                   type="button"
                   onClick={() => typeField.handleChange('owed_to_me')}
                   className={cn(
-                    'text-sm font-bold tracking-widest uppercase transition-opacity',
+                    'uppercase tracking-widest transition-opacity',
                     typeField.state.value === 'owed_to_me'
                       ? 'opacity-100'
                       : 'opacity-40 hover:opacity-70',
                   )}
                 >
-                  Asset (In)
+                  Receivable
                 </button>
                 <button
                   type="button"
                   onClick={() => typeField.handleChange('i_owe')}
                   className={cn(
-                    'text-sm font-bold tracking-widest uppercase transition-opacity',
+                    'uppercase tracking-widest transition-opacity',
                     typeField.state.value === 'i_owe'
                       ? 'opacity-100'
                       : 'opacity-40 hover:opacity-70',
                   )}
                 >
-                  Liability (Out)
+                  Payable
                 </button>
               </div>
 
-              {/* Massive Amount Input */}
-              <div className="w-full max-w-xl relative">
+              <div className="w-full max-w-xl">
+                <div className="font-mono text-xs uppercase tracking-[0.3em] opacity-60 mb-4">
+                  Amount
+                </div>
                 <form.Field
                   name="amount"
                   children={(field) => (
-                    <div className="relative group">
-                      <span className="absolute -left-8 top-[10%] text-6xl md:text-8xl font-display opacity-50 select-none">
+                    <div className="relative">
+                      <span className="absolute -left-8 top-1/2 -translate-y-1/2 text-4xl md:text-6xl font-display opacity-50">
                         $
                       </span>
                       <input
@@ -169,24 +155,15 @@ function AddDebt() {
                         }
                         placeholder="0"
                         className={cn(
-                          'w-full bg-transparent border-none p-0 text-[20vw] md:text-[12vw] font-display font-black leading-none focus:outline-none placeholder:opacity-30 appearance-none',
-                          typeField.state.value === 'owed_to_me'
-                            ? 'text-ink placeholder:text-ink'
-                            : 'text-white placeholder:text-white',
+                          'w-full bg-transparent border-none p-0 text-[15vw] md:text-[10vw] font-black font-mono leading-none focus:outline-none placeholder:opacity-30 appearance-none',
+                          'text-paper placeholder:text-paper',
                         )}
                         autoFocus
                       />
                     </div>
                   )}
                 />
-                <p
-                  className={cn(
-                    'mt-4 font-mono text-lg uppercase tracking-widest opacity-60',
-                    typeField.state.value === 'owed_to_me'
-                      ? 'text-ink'
-                      : 'text-white',
-                  )}
-                >
+                <p className="font-mono text-sm opacity-60 mt-4 uppercase tracking-wider">
                   {typeField.state.value === 'owed_to_me'
                     ? 'To be received'
                     : 'To be paid'}
@@ -196,13 +173,25 @@ function AddDebt() {
           )}
         />
 
-        {/* ZONE 2: THE CONTEXT (Right/Bottom) */}
-        <div className="w-full md:w-[45%] h-auto md:h-full bg-surface p-8 md:p-16 flex flex-col justify-center shadow-2xl relative z-10 rounded-t-3xl md:rounded-none -mt-8 md:mt-0">
-          <div className="max-w-md mx-auto w-full space-y-12">
-            <div className="space-y-8">
-              {/* Counterparty */}
-              <div className="space-y-4 group">
-                <Label className="text-muted-foreground text-xs uppercase tracking-[0.2em] font-bold pl-1">
+        <div
+          className={cn(
+            'w-full md:w-1/2 min-h-[60vh] md:min-h-screen bg-paper p-8 md:p-12',
+            'border-t-3 md:border-t-0 md:border-l-3 border-ink',
+          )}
+        >
+          <div className="max-w-md mx-auto space-y-8">
+            <div>
+              <h1 className="text-3xl font-black font-display tracking-tighter mb-1">
+                NEW ENTRY
+              </h1>
+              <div className="font-mono text-xs opacity-60 uppercase tracking-wider">
+                Create a ledger entry
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <div className="space-y-3">
+                <Label className="font-mono text-xs uppercase tracking-widest opacity-60">
                   Counterparty
                 </Label>
                 <form.Field
@@ -210,33 +199,33 @@ function AddDebt() {
                   children={(field) => (
                     <>
                       <Select
-                        value={field.state.value}
+                        value={field.state.value || ''}
                         onValueChange={(val) => {
-                          if (val === 'create_new') setIsCreatingPerson(true)
-                          else field.handleChange(val)
+                          if (val === 'create_new') {
+                            setIsCreatingPerson(true)
+                          } else {
+                            field.handleChange(val as 'owed_to_me' | 'i_owe')
+                          }
                         }}
                       >
-                        <SelectTrigger className="w-full h-auto py-4 px-0 border-0 border-b-2 border-muted bg-transparent rounded-none text-3xl font-display font-bold hover:bg-transparent shadow-none focus:ring-0 focus:border-ink transition-colors data-[placeholder]:text-muted-foreground/50">
-                          <SelectValue placeholder="Who is this?" />
+                        <SelectTrigger
+                          className={cn(
+                            'w-full h-auto py-4 px-0 border-0 border-b-2 border-ink bg-transparent rounded-none text-2xl font-display font-bold',
+                            'focus:ring-0 focus:border-ink transition-colors',
+                            !field.state.value && 'text-muted-foreground',
+                          )}
+                        >
+                          <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="max-h-[300px]">
+                        <SelectContent>
                           {people.map((p) => (
-                            <SelectItem
-                              key={p.id}
-                              value={p.id}
-                              className="py-3 text-lg font-medium"
-                            >
+                            <SelectItem key={p.id} value={p.id}>
                               {p.name}
                             </SelectItem>
                           ))}
-                          <div className="p-2 border-t mt-2">
-                            <SelectItem
-                              value="create_new"
-                              className="justify-center text-accent font-bold py-3 bg-accent/5"
-                            >
-                              + Create New
-                            </SelectItem>
-                          </div>
+                          <SelectItem value="create_new">
+                            + Create New
+                          </SelectItem>
                         </SelectContent>
                       </Select>
 
@@ -244,9 +233,11 @@ function AddDebt() {
                         open={isCreatingPerson}
                         onOpenChange={setIsCreatingPerson}
                       >
-                        <DialogContent>
+                        <DialogContent className="heavy-border bg-paper">
                           <DialogHeader>
-                            <DialogTitle>New Profile</DialogTitle>
+                            <DialogTitle className="font-display font-bold">
+                              New Contact
+                            </DialogTitle>
                           </DialogHeader>
                           <div className="py-6">
                             <Input
@@ -260,7 +251,7 @@ function AddDebt() {
                                 }
                               }}
                               placeholder="Name..."
-                              className="text-lg py-6"
+                              className="h-12 font-mono"
                             />
                           </div>
                           <DialogFooter>
@@ -268,8 +259,9 @@ function AddDebt() {
                               onClick={() =>
                                 handleCreatePerson(field.handleChange)
                               }
+                              className="heavy-border font-bold uppercase text-xs"
                             >
-                              Create Profile
+                              Create
                             </Button>
                           </DialogFooter>
                         </DialogContent>
@@ -279,27 +271,63 @@ function AddDebt() {
                 />
               </div>
 
-              {/* Date */}
-              <div className="space-y-4">
-                <Label className="text-muted-foreground text-xs uppercase tracking-[0.2em] font-bold pl-1">
-                  Due Date
-                </Label>
-                <form.Field
-                  name="dueDate"
-                  children={(field) => (
-                    <Input
-                      type="date"
-                      value={field.state.value}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      className="w-full h-auto py-3 px-0 border-0 border-b-2 border-muted bg-transparent rounded-none text-xl font-mono text-ink shadow-none focus:ring-0 focus:border-ink hover:border-muted-foreground transition-colors"
-                    />
-                  )}
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-3">
+                  <Label className="font-mono text-xs uppercase tracking-widest opacity-60">
+                    Currency
+                  </Label>
+                  <form.Field
+                    name="currency"
+                    children={(field) => (
+                      <Select
+                        value={field.state.value || ''}
+                        onValueChange={(val) =>
+                          field.handleChange(
+                            val as 'USD' | 'EUR' | 'GBP' | 'JPY',
+                          )
+                        }
+                      >
+                        <SelectTrigger
+                          className={cn(
+                            'h-10 border-0 border-b-2 border-ink bg-transparent rounded-none font-mono',
+                            'focus:ring-0',
+                          )}
+                        >
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="USD">USD</SelectItem>
+                          <SelectItem value="EUR">EUR</SelectItem>
+                          <SelectItem value="GBP">GBP</SelectItem>
+                          <SelectItem value="JPY">JPY</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  />
+                </div>
+                <div className="space-y-3">
+                  <Label className="font-mono text-xs uppercase tracking-widest opacity-60">
+                    Due Date
+                  </Label>
+                  <form.Field
+                    name="dueDate"
+                    children={(field) => (
+                      <Input
+                        type="date"
+                        value={field.state.value}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        className={cn(
+                          'h-10 border-0 border-b-2 border-ink bg-transparent rounded-none font-mono',
+                          'focus:ring-0',
+                        )}
+                      />
+                    )}
+                  />
+                </div>
               </div>
 
-              {/* Description */}
-              <div className="space-y-4">
-                <Label className="text-muted-foreground text-xs uppercase tracking-[0.2em] font-bold pl-1">
+              <div className="space-y-3">
+                <Label className="font-mono text-xs uppercase tracking-widest opacity-60">
                   Description
                 </Label>
                 <form.Field
@@ -308,31 +336,33 @@ function AddDebt() {
                     <Input
                       value={field.state.value}
                       onChange={(e) => field.handleChange(e.target.value)}
-                      placeholder="What's the story?"
-                      className="w-full h-auto py-3 px-0 border-0 border-b-2 border-muted bg-transparent rounded-none text-xl font-body text-ink shadow-none focus:ring-0 focus:border-ink hover:border-muted-foreground transition-colors placeholder:text-muted-foreground/40"
+                      placeholder="Optional notes..."
+                      className={cn(
+                        'border-0 border-b-2 border-ink bg-transparent rounded-none',
+                        'focus:ring-0 font-mono',
+                      )}
                     />
                   )}
                 />
               </div>
             </div>
 
-            {/* Submit Button - Floating Action */}
-            <div className="pt-8">
+            <div className="pt-4">
               <Button
                 type="submit"
                 disabled={form.state.isSubmitting}
-                className="w-full h-20 text-xl font-display font-bold uppercase tracking-widest rounded-full bg-ink text-surface hover:scale-[1.02] active:scale-[0.98] transition-all shadow-2xl disabled:opacity-50"
+                className={cn(
+                  'w-full h-14 font-bold uppercase tracking-widest text-sm heavy-border',
+                  'bg-ink text-paper hover:bg-ink/90 transition-colors',
+                  'disabled:opacity-50',
+                )}
               >
                 {form.state.isSubmitting ? (
-                  <span className="animate-pulse">Processing...</span>
+                  <span className="animate-pulse font-mono">Processing...</span>
                 ) : (
-                  <span className="flex items-center gap-3">
-                    Confirm Record{' '}
-                    <HugeiconsIcon
-                      icon={Tick02Icon}
-                      strokeWidth={3}
-                      className="w-6 h-6"
-                    />
+                  <span className="flex items-center justify-center gap-2">
+                    Record Entry
+                    <HugeiconsIcon icon={Tick02Icon} className="w-4 h-4" />
                   </span>
                 )}
               </Button>

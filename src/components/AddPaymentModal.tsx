@@ -2,7 +2,6 @@ import { Button } from '@/components/ui/button'
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
@@ -58,13 +57,15 @@ export function AddPaymentModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md bg-zinc-900 border-zinc-800 text-zinc-100">
-        <DialogHeader>
-          <DialogTitle>Record Payment</DialogTitle>
-          <DialogDescription>
-            Record a payment for {formatCurrency(debt.amount, debt.currency)} -{' '}
+      <DialogContent className="heavy-border bg-paper max-w-md">
+        <DialogHeader className="heavy-border-b border-ink pb-4">
+          <DialogTitle className="font-display font-bold text-xl">
+            Record Payment
+          </DialogTitle>
+          <div className="font-mono text-xs opacity-60">
+            {formatCurrency(debt.amount, debt.currency)} ·{' '}
             {debt.description || 'Debt'}
-          </DialogDescription>
+          </div>
         </DialogHeader>
 
         <form
@@ -73,13 +74,15 @@ export function AddPaymentModal({
             e.stopPropagation()
             form.handleSubmit()
           }}
-          className="space-y-4"
+          className="space-y-6 pt-4"
         >
-          <div className="space-y-2">
-            <Label htmlFor="amount">
-              Amount (Remaining:{' '}
-              {formatCurrency(remainingAmount, debt.currency)})
+          <div className="space-y-3">
+            <Label className="font-mono text-xs uppercase tracking-widest opacity-60">
+              Amount
             </Label>
+            <div className="font-mono text-xs opacity-60 mb-2">
+              Remaining: {formatCurrency(remainingAmount, debt.currency)}
+            </div>
             <form.Field
               name="amount"
               validators={{
@@ -88,16 +91,15 @@ export function AddPaymentModal({
               children={(field) => (
                 <>
                   <Input
-                    id="amount"
                     type="number"
                     step="0.01"
                     value={field.state.value}
                     onBlur={field.handleBlur}
                     onChange={(e) => field.handleChange(e.target.valueAsNumber)}
-                    className="border-zinc-700 bg-zinc-950"
+                    className="h-12 border-0 border-b-2 border-ink bg-transparent rounded-none font-mono text-lg focus:ring-0"
                   />
                   {field.state.meta.errors ? (
-                    <em className="text-red-500 text-xs">
+                    <em className="text-crimson text-xs font-mono">
                       {field.state.meta.errors.join(', ')}
                     </em>
                   ) : null}
@@ -106,49 +108,56 @@ export function AddPaymentModal({
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="paidAt">Date</Label>
+          <div className="space-y-3">
+            <Label className="font-mono text-xs uppercase tracking-widest opacity-60">
+              Date
+            </Label>
             <form.Field
               name="paidAt"
               children={(field) => (
                 <Input
-                  id="paidAt"
                   type="date"
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
-                  className="border-zinc-700 bg-zinc-950"
+                  className="h-12 border-0 border-b-2 border-ink bg-transparent rounded-none font-mono focus:ring-0"
                 />
               )}
             />
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="notes">Notes (optional)</Label>
+          <div className="space-y-3">
+            <Label className="font-mono text-xs uppercase tracking-widest opacity-60">
+              Notes (optional)
+            </Label>
             <form.Field
               name="notes"
               children={(field) => (
                 <Textarea
-                  id="notes"
                   value={field.state.value}
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
-                  className="border-zinc-700 bg-zinc-950 resize-none h-20"
+                  className="border-0 border-b-2 border-ink bg-transparent rounded-none font-mono resize-none h-20 focus:ring-0"
                   placeholder="Payment method, etc."
                 />
               )}
             />
           </div>
 
-          <div className="flex justify-end gap-2 pt-2">
+          <div className="flex justify-end gap-3 pt-4">
             <Button
               type="button"
               variant="ghost"
               onClick={() => onOpenChange(false)}
+              className="font-mono text-xs uppercase hover:bg-ink/10"
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={form.state.isSubmitting}>
+            <Button
+              type="submit"
+              disabled={form.state.isSubmitting}
+              className="heavy-border font-bold uppercase text-xs bg-ink text-paper hover:bg-ink/90"
+            >
               {form.state.isSubmitting ? 'Saving...' : 'Record Payment'}
             </Button>
           </div>

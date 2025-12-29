@@ -1,143 +1,161 @@
-import { Button, buttonVariants } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { createPerson } from "@/server/functions/people";
-import { useForm } from "@tanstack/react-form";
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { z } from "zod";
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
+import { createPerson } from '@/server/functions/people'
+import { useForm } from '@tanstack/react-form'
+import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
+import { z } from 'zod'
 
-export const Route = createFileRoute("/people/new")({
+export const Route = createFileRoute('/people/new')({
   component: AddPerson,
-});
+})
 
 function AddPerson() {
-  const router = useRouter();
+  const router = useRouter()
 
   const form = useForm({
     defaultValues: {
-      name: "",
-      email: "",
-      phone: "",
-      notes: "",
+      name: '',
+      email: '',
+      phone: '',
+      notes: '',
     },
     onSubmit: async ({ value }) => {
-      await createPerson({ data: value });
-      router.invalidate();
-      await router.navigate({ to: "/people" });
+      await createPerson({ data: value })
+      router.invalidate()
+      await router.navigate({ to: '/people' })
     },
-  });
+  })
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Add Person</h1>
-        <Link to="/people" className={buttonVariants({ variant: "ghost" })}>
-          Cancel
+    <div className="min-h-screen bg-paper p-6">
+      <div className="max-w-xl mx-auto">
+        <Link
+          to="/people"
+          className="font-mono text-xs opacity-60 hover:opacity-100 mb-6 inline-block"
+        >
+          ← BACK
         </Link>
-      </div>
 
-      <Card className="bg-zinc-900 border-zinc-800 text-zinc-100">
-        <CardHeader>
-          <CardTitle>Details</CardTitle>
-          <CardDescription>Contact information for the person.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              form.handleSubmit();
-            }}
-            className="space-y-4"
-          >
-            <div className="space-y-2">
-              <Label htmlFor="name">Name</Label>
-              <form.Field
-                name="name"
-                validators={{
-                  onChange: z.string().min(1, "Name is required"),
-                }}
-                children={(field) => (
-                  <>
-                    <Input
-                      id="name"
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      className="border-zinc-700 bg-zinc-950"
-                      placeholder="John Doe"
-                    />
-                    {field.state.meta.errors ? (
-                      <em role="alert" className="text-red-500 text-xs">{field.state.meta.errors.join(", ")}</em>
-                    ) : null}
-                  </>
-                )}
-              />
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">Email (optional)</Label>
+        <div className="heavy-border bg-paper">
+          <div className="heavy-border-b border-ink bg-ink p-4">
+            <h1 className="font-mono text-sm font-bold text-paper uppercase tracking-widest">
+              New Contact
+            </h1>
+          </div>
+          <div className="p-8">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                form.handleSubmit()
+              }}
+              className="space-y-6"
+            >
+              <div className="space-y-3">
+                <Label className="font-mono text-xs uppercase tracking-widest opacity-60">
+                  Name *
+                </Label>
                 <form.Field
-                  name="email"
+                  name="name"
+                  validators={{
+                    onChange: z.string().min(1, 'Name is required'),
+                  }}
                   children={(field) => (
-                    <Input
-                      id="email"
-                      type="email"
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      className="border-zinc-700 bg-zinc-950"
-                      placeholder="john@example.com"
-                    />
+                    <>
+                      <Input
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        className="h-12 border-0 border-b-2 border-ink bg-transparent rounded-none font-mono focus:ring-0"
+                        placeholder="John Doe"
+                      />
+                      {field.state.meta.errors ? (
+                        <em className="text-crimson text-xs font-mono">
+                          {field.state.meta.errors.join(', ')}
+                        </em>
+                      ) : null}
+                    </>
                   )}
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone (optional)</Label>
-                <form.Field
-                  name="phone"
-                  children={(field) => (
-                    <Input
-                      id="phone"
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      className="border-zinc-700 bg-zinc-950"
-                      placeholder="+1 555-1234"
-                    />
-                  )}
-                />
-              </div>
-            </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="notes">Notes (optional)</Label>
-              <form.Field
-                name="notes"
-                children={(field) => (
-                  <Textarea
-                    id="notes"
-                    value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    className="border-zinc-700 bg-zinc-950 resize-none h-24"
-                    placeholder="Met at..."
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <Label className="font-mono text-xs uppercase tracking-widest opacity-60">
+                    Email
+                  </Label>
+                  <form.Field
+                    name="email"
+                    children={(field) => (
+                      <Input
+                        type="email"
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        className="h-12 border-0 border-b-2 border-ink bg-transparent rounded-none font-mono focus:ring-0"
+                        placeholder="john@example.com"
+                      />
+                    )}
                   />
-                )}
-              />
-            </div>
+                </div>
+                <div className="space-y-3">
+                  <Label className="font-mono text-xs uppercase tracking-widest opacity-60">
+                    Phone
+                  </Label>
+                  <form.Field
+                    name="phone"
+                    children={(field) => (
+                      <Input
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                        className="h-12 border-0 border-b-2 border-ink bg-transparent rounded-none font-mono focus:ring-0"
+                        placeholder="+1 555-1234"
+                      />
+                    )}
+                  />
+                </div>
+              </div>
 
-            <div className="pt-4 flex justify-end">
-              <Button type="submit" disabled={form.state.isSubmitting}>
-                {form.state.isSubmitting ? "Saving..." : "Save Person"}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
+              <div className="space-y-3">
+                <Label className="font-mono text-xs uppercase tracking-widest opacity-60">
+                  Notes
+                </Label>
+                <form.Field
+                  name="notes"
+                  children={(field) => (
+                    <Textarea
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      className="border-0 border-b-2 border-ink bg-transparent rounded-none font-mono resize-none h-24 focus:ring-0"
+                      placeholder="How you met, relationship context..."
+                    />
+                  )}
+                />
+              </div>
+
+              <div className="pt-4 flex justify-end gap-3">
+                <Link
+                  to="/people"
+                  className="font-mono text-xs uppercase px-4 py-3 hover:bg-ink/10"
+                >
+                  Cancel
+                </Link>
+                <Button
+                  type="submit"
+                  disabled={form.state.isSubmitting}
+                  className="heavy-border font-bold uppercase text-xs bg-ink text-paper hover:bg-ink/90"
+                >
+                  {form.state.isSubmitting ? 'Saving...' : 'Create Contact'}
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
     </div>
-  );
+  )
 }

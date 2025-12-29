@@ -3,13 +3,6 @@ import { Button } from '@/components/ui/button'
 import { formatCurrency } from '@/lib/currencies'
 import { cn } from '@/lib/utils'
 import { getDebt } from '@/server/functions/debts'
-import {
-  ArrowLeft02Icon,
-  Calendar02Icon,
-  Note01Icon,
-  PlusSignIcon,
-} from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useState } from 'react'
 
@@ -26,145 +19,221 @@ function DebtDetails() {
   const { debt } = Route.useLoaderData()
   const [modalOpen, setModalOpen] = useState(false)
 
-  const totalPaid = debt.payments.reduce((acc, p) => acc + p.amount, 0)
+  const totalPaid = debt.payments?.reduce((acc, p) => acc + p.amount, 0) || 0
   const remaining = debt.amount - totalPaid
-  const progress = Math.min((totalPaid / debt.amount) * 100, 100)
+  const progress = (totalPaid / debt.amount) * 100
 
   const isOwedToMe = debt.type === 'owed_to_me'
-  const themeClass = isOwedToMe ? 'bg-metric text-ink' : 'bg-accent text-white'
+  const theme = isOwedToMe
+    ? { bg: 'bg-forest', text: 'text-paper', accent: 'text-forest-20' }
+    : { bg: 'bg-crimson', text: 'text-paper', accent: 'text-crimson-20' }
 
   return (
-    <div className="fixed inset-0 bg-canvas overflow-auto md:overflow-hidden flex flex-col md:flex-row font-sans">
-      {/* Floating Back Button */}
-      <div className="absolute top-6 left-6 z-50 mix-blend-difference text-surface">
-        <Link
-          to="/debts"
-          className="rounded-full w-14 h-14 bg-transparent border-2 border-current hover:bg-surface/20 inline-flex items-center justify-center"
-        >
-          <HugeiconsIcon
-            icon={ArrowLeft02Icon}
-            strokeWidth={2.5}
-            className="w-6 h-6"
-          />
-        </Link>
-      </div>
-
-      {/* ZONE 1: HERO (Left/Top) */}
+    <div className="min-h-screen flex flex-col md:flex-row">
       <div
         className={cn(
-          'relative w-full md:w-[50%] h-[50vh] md:h-full flex flex-col justify-center items-center px-12 py-8 md:p-12 transition-colors duration-500',
-          themeClass,
+          'fixed inset-0 z-0',
+          theme.bg,
+          'md:relative md:w-1/2 md:h-screen md:flex md:flex-col md:justify-center md:items-center p-8 md:p-12',
         )}
       >
-        <div className="flex flex-col items-center gap-2 max-w-xl text-center">
-          <span className="font-mono text-sm uppercase tracking-[0.3em] opacity-60 mb-4">
-            {isOwedToMe ? 'Asset Value' : 'Liability'}
-          </span>
-
-          <div className="relative px-4">
-            <h1 className="text-[12vw] md:text-[8vw] font-display font-black leading-none tracking-tighter">
+        <Link
+          to="/debts"
+          className={cn(
+            'absolute top-6 left-6 z-50 font-mono text-xs uppercase tracking-widest opacity-60 hover:opacity-100',
+            theme.text,
+          )}
+        >
+          ← BACK
+        </Link>
+        <div className="max-w-xl w-full text-center">
+          <div
+            className={cn(
+              'font-mono text-xs uppercase tracking-[0.3em] opacity-60 mb-6',
+              theme.text,
+            )}
+          >
+            {isOwedToMe ? 'Receivable' : 'Payable'}
+          </div>
+          <div className="relative">
+            <h1
+              className={cn(
+                'text-[12vw] md:text-[8vw] font-black font-display leading-none tracking-tighter',
+                theme.text,
+              )}
+            >
               {formatCurrency(remaining, debt.currency).replace(
                 /[^0-9.,]/g,
                 '',
               )}
             </h1>
-            <span className="absolute -top-4 -left-8 md:-left-12 text-4xl md:text-6xl font-display font-bold opacity-50">
+            <span
+              className={cn(
+                'absolute -top-4 -left-6 md:-left-8 text-3xl md:text-5xl font-display font-bold opacity-40',
+                theme.text,
+              )}
+            >
               {formatCurrency(0, debt.currency).replace(/[0-9.,\s]/g, '')}
             </span>
           </div>
-
-          <p className="text-xl md:text-2xl font-medium opacity-80 mt-4">
-            {debt.person?.name}
+          <p
+            className={cn(
+              'text-xl md:text-2xl font-medium opacity-80 mt-6',
+              theme.text,
+            )}
+          >
+            {debt.person?.name || 'Unknown'}
           </p>
-
-          <div className="mt-8 w-64 h-1 bg-black/20 rounded-full overflow-hidden">
+          <p className={cn('font-mono text-sm opacity-60 mt-2', theme.text)}>
+            {debt.description || 'No description'}
+          </p>
+          <div className="mt-8 w-64 h-1 bg-white/20 mx-auto rounded-full overflow-hidden">
             <div
-              className="h-full bg-current opacity-80"
+              className={cn('h-full transition-all', theme.text, 'bg-current')}
               style={{ width: `${progress}%` }}
             />
           </div>
-
-          <div className="mt-2 flex justify-between w-64 text-xs font-mono uppercase opacity-60">
-            <span>Paid: {formatCurrency(totalPaid, debt.currency)}</span>
+          <div
+            className={cn(
+              'mt-2 flex justify-between w-64 mx-auto font-mono text-xs uppercase opacity-60',
+              theme.text,
+            )}
+          >
+            <span>
+              {isOwedToMe ? 'Received' : 'Paid'}:{' '}
+              {formatCurrency(totalPaid, debt.currency)}
+            </span>
             <span>Total: {formatCurrency(debt.amount, debt.currency)}</span>
           </div>
-        </div>
-
-        {/* Action Button positioned within Hero for mobile */}
-        {debt.status !== 'settled' && (
-          <Button
-            onClick={() => setModalOpen(true)}
-            className="md:hidden mt-8 rounded-full h-14 px-8 bg-surface text-ink hover:bg-white border-none shadow-lg font-bold uppercase tracking-widest"
-          >
-            Add Payment
-          </Button>
-        )}
-      </div>
-
-      {/* ZONE 2: HISTORY (Right/Bottom) */}
-      <div className="w-full md:w-[50%] h-auto md:h-full bg-surface relative flex flex-col">
-        {/* Header */}
-        <div className="p-8 md:p-12 pb-4 border-b border-muted">
-          <div className="flex justify-between items-start">
-            <div>
-              <h2 className="text-3xl font-display font-bold">History</h2>
-              <p className="text-muted-foreground mt-1 text-sm font-mono uppercase tracking-wider">
-                {debt.description || 'No description provided'}
-              </p>
-            </div>
-
-            {/* Desktop Action Button */}
-            {debt.status !== 'settled' && (
+          {debt.status !== 'settled' && (
+            <div className="mt-8">
               <Button
                 onClick={() => setModalOpen(true)}
-                className="hidden md:flex rounded-full h-14 w-14 p-0 bg-ink text-surface hover:scale-105 shadow-xl transition-all items-center justify-center"
+                className={cn(
+                  'rounded-full h-14 px-8 font-bold uppercase tracking-widest text-sm border-2 border-current hover:bg-white hover:text-ink transition-colors',
+                  theme.text,
+                  'bg-transparent',
+                )}
               >
-                <HugeiconsIcon
-                  icon={PlusSignIcon}
-                  strokeWidth={3}
-                  className="w-6 h-6"
-                />
+                Record Payment
               </Button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
+      </div>
 
-        {/* List */}
-        <div className="flex-1 overflow-auto p-8 md:p-12 space-y-8">
+      <div
+        className={cn(
+          'relative z-10 bg-paper md:w-1/2 min-h-[50vh] md:h-screen overflow-auto',
+          'border-t md:border-t-0 md:border-l-3 border-ink',
+        )}
+      >
+        <div className="p-6 md:p-12">
+          <h2
+            className={cn(
+              'text-3xl font-black font-display tracking-tighter mb-2',
+            )}
+          >
+            HISTORY
+          </h2>
+          <div className="font-mono text-xs opacity-60 uppercase tracking-wider mb-8">
+            {debt.payments.length} payment
+            {debt.payments.length !== 1 ? 's' : ''} recorded
+          </div>
+
           {debt.payments.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-muted-foreground opacity-50">
-              <Calendar02Icon className="w-12 h-12 mb-4" />
-              <p className="font-mono text-sm uppercase tracking-widest">
-                No payments recorded
+            <div
+              className={cn(
+                'flex flex-col items-center justify-center py-12 border-2 border-dashed border-ink/20',
+              )}
+            >
+              <div className="font-mono text-sm opacity-60 mb-2">
+                NO PAYMENTS
+              </div>
+              <p className="text-muted-foreground text-sm text-center max-w-xs">
+                No payments have been recorded for this entry.
               </p>
             </div>
           ) : (
-            <div className="relative border-l-2 border-muted ml-3 space-y-8 py-2">
-              {debt.payments.map((payment) => (
-                <div key={payment.id} className="relative pl-8 group">
-                  <div className="absolute -left-[9px] top-2 w-4 h-4 rounded-full bg-surface border-4 border-muted group-hover:border-ink transition-colors" />
-                  <div className="flex justify-between items-baseline mb-1">
-                    <span className="text-2xl font-display font-bold">
-                      {formatCurrency(payment.amount, debt.currency)}
-                    </span>
-                    <span className="text-xs font-mono text-muted-foreground bg-muted/30 px-2 py-1 rounded">
-                      {new Date(payment.date).toLocaleDateString(undefined, {
+            <div className="relative pl-8">
+              <div
+                className={cn('absolute left-0 top-0 bottom-0 w-px bg-ink/20')}
+              />
+              {debt.payments.map((payment: any) => (
+                <div key={payment.id} className="relative pb-8 last:pb-0">
+                  <div
+                    className={cn(
+                      'absolute -left-[35px] top-1 w-3 h-3 rounded-full border-2 border-ink bg-paper',
+                    )}
+                  />
+                  <div className="font-bold text-lg">
+                    {formatCurrency(payment.amount, debt.currency)}
+                  </div>
+                  <div
+                    className={cn(
+                      'font-mono text-xs text-muted-foreground mt-1 flex items-center gap-2',
+                    )}
+                  >
+                    <span>
+                      {new Date(payment.paidAt!).toLocaleDateString(undefined, {
                         month: 'short',
                         day: 'numeric',
                         year: 'numeric',
                       })}
                     </span>
+                    <span>·</span>
+                    <span>
+                      {new Date(payment.paidAt!).toLocaleTimeString(undefined, {
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })}
+                    </span>
                   </div>
-                  {payment.note && (
-                    <div className="flex gap-2 items-start text-muted-foreground text-sm">
-                      <Note01Icon className="w-4 h-4 mt-0.5 shrink-0" />
-                      <p className="leading-snug">{payment.note}</p>
+                  {payment.notes && (
+                    <div
+                      className={cn(
+                        'mt-2 text-sm opacity-80 pl-4 border-l-2 border-ink/20',
+                      )}
+                    >
+                      {payment.notes}
                     </div>
                   )}
                 </div>
               ))}
             </div>
           )}
+
+          <div className={cn('mt-12 p-6 heavy-border', 'bg-ink text-paper')}>
+            <h3 className="font-mono text-xs font-bold uppercase mb-4">
+              ENTRY DETAILS
+            </h3>
+            <div className="grid grid-cols-2 gap-4 font-mono text-sm">
+              <div>
+                <div className="opacity-60 text-xs">Created</div>
+                <div>
+                  {new Date(debt.createdAt!).toLocaleDateString(undefined, {
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric',
+                  })}
+                </div>
+              </div>
+              <div>
+                <div className="opacity-60 text-xs">Type</div>
+                <div className="uppercase">
+                  {debt.type === 'owed_to_me' ? 'Receivable' : 'Payable'}
+                </div>
+              </div>
+              <div>
+                <div className="opacity-60 text-xs">Original Amount</div>
+                <div>{formatCurrency(debt.amount, debt.currency)}</div>
+              </div>
+              <div>
+                <div className="opacity-60 text-xs">Status</div>
+                <div className="uppercase">{debt.status}</div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

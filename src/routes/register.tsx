@@ -1,129 +1,159 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { checkUserExists, register } from "@/server/functions/auth";
-import { useForm } from "@tanstack/react-form";
-import { createFileRoute, redirect, useRouter } from "@tanstack/react-router";
-import { useState } from "react";
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { checkUserExists, register } from '@/server/functions/auth'
+import { useForm } from '@tanstack/react-form'
+import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
+import { useState } from 'react'
 
-export const Route = createFileRoute("/register")({
+export const Route = createFileRoute('/register')({
   beforeLoad: async () => {
-    const { exists } = await checkUserExists();
+    const { exists } = await checkUserExists()
     if (exists) {
-      throw redirect({ to: "/login" });
+      throw redirect({ to: '/login' })
     }
   },
   component: Register,
-});
+})
 
 function Register() {
-  const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
+  const router = useRouter()
+  const [error, setError] = useState<string | null>(null)
 
   const form = useForm({
     defaultValues: {
-      email: "",
-      password: "",
-      confirmPassword: "",
+      email: '',
+      password: '',
+      confirmPassword: '',
     },
     onSubmit: async ({ value }) => {
       try {
-        setError(null);
+        setError(null)
 
         if (value.password !== value.confirmPassword) {
-          setError("Passwords do not match");
-          return;
+          setError('Passwords do not match')
+          return
         }
 
-        await register({ data: { email: value.email, password: value.password } });
-        router.invalidate();
-        await router.navigate({ to: "/" });
+        await register({
+          data: { email: value.email, password: value.password },
+        })
+        router.invalidate()
+        await router.navigate({ to: '/' })
       } catch (err) {
         if (err instanceof Error) {
-          setError(err.message);
+          setError(err.message)
         } else {
-          setError("Registration failed");
+          setError('Registration failed')
         }
       }
     },
-  });
+  })
 
   return (
-    <div className="flex h-[80vh] items-center justify-center">
-      <Card className="w-full max-w-md border-zinc-800 bg-zinc-900 text-zinc-100">
-        <CardHeader>
-          <CardTitle className="text-2xl">Create Account</CardTitle>
-          <CardDescription className="text-zinc-400">
-            Set up your account to start tracking expenses.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              form.handleSubmit();
-            }}
-            className="space-y-4"
-          >
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <form.Field
-                name="email"
-                children={(field) => (
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="you@example.com"
-                    value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    className="border-zinc-700 bg-zinc-800"
-                  />
-                )}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <form.Field
-                name="password"
-                children={(field) => (
-                  <Input
-                    id="password"
-                    type="password"
-                    placeholder="At least 8 characters"
-                    value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    className="border-zinc-700 bg-zinc-800"
-                  />
-                )}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="confirmPassword">Confirm Password</Label>
-              <form.Field
-                name="confirmPassword"
-                children={(field) => (
-                  <Input
-                    id="confirmPassword"
-                    type="password"
-                    value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    className="border-zinc-700 bg-zinc-800"
-                  />
-                )}
-              />
-            </div>
-            {error && <p className="text-sm text-red-500">{error}</p>}
-            <Button type="submit" className="w-full bg-white text-black hover:bg-zinc-200">
-              Create Account
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+    <div className="min-h-screen bg-paper flex items-center justify-center p-6">
+      <div className="w-full max-w-md">
+        <div className="text-center mb-12">
+          <h1 className="text-6xl font-black font-display tracking-tighter">
+            LEDGER
+          </h1>
+          <p className="font-mono text-sm opacity-60 mt-2">
+            DEBT TRACKING SYSTEM
+          </p>
+        </div>
+
+        <div className="heavy-border bg-paper">
+          <div className="heavy-border-b border-ink bg-ink p-4">
+            <h2 className="font-mono text-sm font-bold text-paper uppercase tracking-widest">
+              Initialize
+            </h2>
+          </div>
+          <div className="p-8">
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                form.handleSubmit()
+              }}
+              className="space-y-6"
+            >
+              <div className="space-y-3">
+                <Label className="font-mono text-xs uppercase tracking-widest opacity-60">
+                  Email
+                </Label>
+                <form.Field
+                  name="email"
+                  children={(field) => (
+                    <Input
+                      type="email"
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      className="h-12 border-0 border-b-2 border-ink bg-transparent rounded-none font-mono focus:ring-0"
+                      placeholder="you@example.com"
+                    />
+                  )}
+                />
+              </div>
+              <div className="space-y-3">
+                <Label className="font-mono text-xs uppercase tracking-widest opacity-60">
+                  Password
+                </Label>
+                <form.Field
+                  name="password"
+                  children={(field) => (
+                    <Input
+                      type="password"
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      className="h-12 border-0 border-b-2 border-ink bg-transparent rounded-none font-mono focus:ring-0"
+                      placeholder="At least 8 characters"
+                    />
+                  )}
+                />
+              </div>
+              <div className="space-y-3">
+                <Label className="font-mono text-xs uppercase tracking-widest opacity-60">
+                  Confirm Password
+                </Label>
+                <form.Field
+                  name="confirmPassword"
+                  children={(field) => (
+                    <Input
+                      type="password"
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      className="h-12 border-0 border-b-2 border-ink bg-transparent rounded-none font-mono focus:ring-0"
+                    />
+                  )}
+                />
+              </div>
+              {error && (
+                <div className="p-3 bg-crimson/10 border border-crimson text-crimson font-mono text-sm">
+                  {error}
+                </div>
+              )}
+              <Button
+                type="submit"
+                className="w-full h-14 font-bold uppercase tracking-widest text-sm heavy-border bg-ink text-paper hover:bg-ink/90"
+              >
+                Create Account
+              </Button>
+            </form>
+          </div>
+        </div>
+
+        <div className="mt-8 text-center">
+          <p className="font-mono text-xs opacity-60">
+            Already have an account?{' '}
+            <a href="/login" className="underline hover:no-underline">
+              Sign in
+            </a>
+          </p>
+        </div>
+      </div>
     </div>
-  );
+  )
 }
