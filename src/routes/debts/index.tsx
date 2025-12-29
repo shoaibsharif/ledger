@@ -1,18 +1,22 @@
+import { z } from 'zod'
+
+import { createFileRoute, Link } from '@tanstack/react-router'
+
 import { AddPaymentModal } from '@/components/AddPaymentModal'
 import { Button } from '@/components/ui/button'
+import { LoadingSpinner } from '@/components/ui/loading'
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from '@/components/ui/table'
 import { formatCurrency } from '@/lib/currencies'
 import { getDebts } from '@/server/functions/debts'
-import { createFileRoute, Link } from '@tanstack/react-router'
+
 import { useState } from 'react'
-import { z } from 'zod'
 
 export const Route = createFileRoute('/debts/')({
   validateSearch: (search) =>
@@ -36,6 +40,7 @@ export const Route = createFileRoute('/debts/')({
   },
   loaderDeps: ({ search: { status, type } }) => ({ status, type }),
   component: DebtsList,
+  pendingComponent: LoadingSpinner,
 })
 
 function DebtsList() {
@@ -96,11 +101,10 @@ function DebtsList() {
                   key={tab.key ?? 'all'}
                   to="/debts"
                   search={tab.key ? { status: tab.key } : {}}
-                  className={`px-4 py-2 font-mono text-xs uppercase heavy-border transition-all ${
-                    search.status === tab.key
-                      ? 'bg-ink text-paper'
-                      : 'hover:bg-ink hover:text-paper'
-                  }`}
+                  className={`px-4 py-2 font-mono text-xs uppercase heavy-border transition-all ${search.status === tab.key
+                    ? 'bg-ink text-paper'
+                    : 'hover:bg-ink hover:text-paper'
+                    }`}
                 >
                   {tab.label}
                 </Link>
@@ -118,11 +122,10 @@ function DebtsList() {
                   key={tab.key ?? 'all'}
                   to="/debts"
                   search={tab.key ? { type: tab.key } : {}}
-                  className={`px-4 py-2 font-mono text-xs uppercase heavy-border transition-all ${
-                    search.type === tab.key
-                      ? 'bg-forest text-paper'
-                      : 'hover:bg-forest hover:text-paper'
-                  }`}
+                  className={`px-4 py-2 font-mono text-xs uppercase heavy-border transition-all ${search.type === tab.key
+                    ? 'bg-forest text-paper'
+                    : 'hover:bg-forest hover:text-paper'
+                    }`}
                 >
                   {tab.label}
                 </Link>
@@ -169,9 +172,8 @@ function DebtsList() {
                     return (
                       <TableRow
                         key={debt.id}
-                        className={`group ${
-                           index % 2 === 0 ? 'bg-white/30' : 'bg-ink/5'
-                        } hover:bg-ink/10 border-ink`}
+                        className={`group ${index % 2 === 0 ? 'bg-white/30' : 'bg-ink/5'
+                          } hover:bg-ink/10 border-ink`}
                       >
                         <TableCell className="font-medium">
                           <Link
@@ -189,11 +191,10 @@ function DebtsList() {
                         </TableCell>
                         <TableCell>
                           <span
-                            className={`font-mono text-xs uppercase px-2 py-1 ${
-                              debt.type === 'owed_to_me'
-                                ? 'bg-forest/20 text-forest'
-                                : 'bg-crimson/20 text-crimson'
-                            }`}
+                            className={`font-mono text-xs uppercase px-2 py-1 ${debt.type === 'owed_to_me'
+                              ? 'bg-forest/20 text-forest'
+                              : 'bg-crimson/20 text-crimson'
+                              }`}
                           >
                             {debt.type === 'owed_to_me'
                               ? 'Receivable'

@@ -1,5 +1,6 @@
 import { AddPaymentModal } from '@/components/AddPaymentModal'
 import { Button } from '@/components/ui/button'
+import { LoadingSpinner } from '@/components/ui/loading'
 import { formatCurrency } from '@/lib/currencies'
 import { getDashboardSummary, getDebts } from '@/server/functions/debts'
 import { createFileRoute, Link } from '@tanstack/react-router'
@@ -12,6 +13,7 @@ export const Route = createFileRoute('/')({
     return { summary, recentDebts }
   },
   component: Dashboard,
+  pendingComponent: LoadingSpinner,
 })
 
 function Dashboard() {
@@ -91,11 +93,10 @@ function Dashboard() {
                 </div>
               </div>
               <div
-                className={`p-6 ${
-                  netPosition >= 0
-                    ? 'bg-ink text-paper'
-                    : 'bg-crimson text-paper'
-                }`}
+                className={`p-6 ${netPosition >= 0
+                  ? 'bg-ink text-paper'
+                  : 'bg-crimson text-paper'
+                  }`}
               >
                 <div className="font-mono text-xs opacity-70 mb-2">NET</div>
                 <div className="text-4xl font-black font-mono-tight">
@@ -126,9 +127,8 @@ function Dashboard() {
                 return (
                   <div
                     key={debt.id}
-                    className={`group block heavy-border-b border-ink ${
-                      index % 2 === 0 ? 'bg-white/30' : 'bg-ink/5'
-                    } hover:bg-ink hover:text-paper transition-colors`}
+                    className={`group block heavy-border-b border-ink ${index % 2 === 0 ? 'bg-white/30' : 'bg-ink/5'
+                      } hover:bg-ink hover:text-paper transition-colors`}
                   >
                     <Link
                       to="/debts/$debtId"
@@ -149,11 +149,10 @@ function Dashboard() {
                         </div>
                         <div className="text-right">
                           <div
-                            className={`font-mono-tight text-xl font-bold ${
-                              debt.type === 'owed_to_me'
-                                ? 'text-forest'
-                                : 'text-crimson'
-                            } group-hover:text-inherit`}
+                            className={`font-mono-tight text-xl font-bold ${debt.type === 'owed_to_me'
+                              ? 'text-forest'
+                              : 'text-crimson'
+                              } group-hover:text-inherit`}
                           >
                             {debt.type === 'owed_to_me' ? '+' : '-'}
                             {formatCurrency(debt.amount, debt.currency)}

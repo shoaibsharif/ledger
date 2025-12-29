@@ -1,5 +1,6 @@
 import { AddPaymentModal } from '@/components/AddPaymentModal'
 import { Button } from '@/components/ui/button'
+import { LoadingSpinner } from '@/components/ui/loading'
 import { formatCurrency } from '@/lib/currencies'
 import { cn } from '@/lib/utils'
 import { getDebt } from '@/server/functions/debts'
@@ -13,6 +14,7 @@ export const Route = createFileRoute('/debts/$debtId')({
     }
   },
   component: DebtDetails,
+  pendingComponent: LoadingSpinner,
 })
 
 function DebtDetails() {
@@ -163,7 +165,7 @@ function DebtDetails() {
                 <div key={payment.id} className="relative pb-8 last:pb-0">
                   <div
                     className={cn(
-                      'absolute -left-[35px] top-1 w-3 h-3 rounded-full border-2 border-ink bg-paper',
+                      'absolute -left-[37px] top-2 w-3 h-3 rounded-full border-2 border-ink bg-paper',
                     )}
                   />
                   <div className="font-bold text-lg">

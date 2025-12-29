@@ -1,6 +1,7 @@
 import { AddPaymentModal } from '@/components/AddPaymentModal'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
+import { LoadingSpinner } from "@/components/ui/loading"
 import { formatCurrency } from '@/lib/currencies'
 import { getPerson } from '@/server/functions/people'
 import { createFileRoute, Link } from '@tanstack/react-router'
@@ -15,6 +16,7 @@ export const Route = createFileRoute('/people/$personId')({
     return { person }
   },
   component: PersonDetail,
+  pendingComponent: LoadingSpinner,
 })
 
 function PersonDetail() {
@@ -103,9 +105,8 @@ function PersonDetail() {
                 NET POSITION
               </div>
               <div
-                className={`text-3xl font-black font-mono-tight ${
-                  totalOwedToMe - totalIOwe >= 0 ? '' : ''
-                }`}
+                className={`text-3xl font-black font-mono-tight ${totalOwedToMe - totalIOwe >= 0 ? '' : ''
+                  }`}
               >
                 {totalOwedToMe - totalIOwe >= 0 ? '+' : ''}
                 {formatCurrency(totalOwedToMe - totalIOwe, 'USD')}
@@ -158,9 +159,8 @@ function PersonDetail() {
                   return (
                     <div
                       key={debt.id}
-                      className={`grid grid-cols-12 heavy-border-b border-ink ${
-                        index % 2 === 0 ? 'bg-white/30' : 'bg-ink/5'
-                      } group`}
+                      className={`grid grid-cols-12 heavy-border-b border-ink ${index % 2 === 0 ? 'bg-white/30' : 'bg-ink/5'
+                        } group`}
                     >
                       <div className="col-span-4 p-4">
                         <Link
@@ -178,11 +178,10 @@ function PersonDetail() {
                       </div>
                       <div className="col-span-2 p-4 flex items-center">
                         <span
-                          className={`font-mono text-xs uppercase px-2 py-1 ${
-                            debt.type === 'owed_to_me'
-                              ? 'bg-forest/20 text-forest'
-                              : 'bg-crimson/20 text-crimson'
-                          }`}
+                          className={`font-mono text-xs uppercase px-2 py-1 ${debt.type === 'owed_to_me'
+                            ? 'bg-forest/20 text-forest'
+                            : 'bg-crimson/20 text-crimson'
+                            }`}
                         >
                           {debt.type === 'owed_to_me'
                             ? 'Receivable'

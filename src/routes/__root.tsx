@@ -10,11 +10,13 @@ import {
   useRouter,
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
-
-import { Cancel01Icon, Menu01Icon } from '@hugeicons/core-free-icons'
+import { Menu01Icon, Cancel01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
-import { useState } from 'react'
+
+import { LoadingPage } from '@/components/ui/loading'
+import { useEffect, useState } from 'react'
 import { Logo } from '../components/ui/logo'
+import { startAutoSync, stopAutoSync } from '../lib/sync'
 import { checkUserExists, getSession, logout } from '../server/functions/auth'
 import appCss from '../styles.css?url'
 
@@ -85,14 +87,27 @@ export const Route = createRootRoute({
     return { session }
   },
 
-  component: () => (
-    <div className="min-h-screen bg-paper flex flex-col">
-      <Nav />
-      <main className="flex-1">
-        <Outlet />
-      </main>
-    </div>
-  ),
+  component: () => {
+    useEffect(() => {
+      if (typeof window !== 'undefined') {
+        startAutoSync()
+      }
+      return () => {
+        stopAutoSync()
+      }
+    }, [])
+
+    return (
+      <div className="min-h-screen bg-paper flex flex-col">
+        <Nav />
+        <main className="flex-1">
+          <Outlet />
+        </main>
+      </div>
+    )
+  },
+
+  pendingComponent: LoadingPage,
 
   notFoundComponent: () => (
     <div className="min-h-screen flex items-center justify-center bg-paper">
@@ -109,7 +124,6 @@ export const Route = createRootRoute({
 
   shellComponent: RootDocument,
 })
-
 
 // ... inside Nav component ...
 // ... existing imports ...
@@ -205,8 +219,9 @@ function Nav() {
                   key={link.to}
                   href={link.to}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className={`text-4xl font-black font-display uppercase tracking-tighter ${location === link.to ? 'text-crimson' : 'text-ink'
-                    }`}
+                  className={`text-4xl font-black font-display uppercase tracking-tighter ${
+                    location === link.to ? 'text-crimson' : 'text-ink'
+                  }`}
                 >
                   {link.label}
                 </a>
@@ -222,7 +237,9 @@ function Nav() {
                 + New Entry
               </a>
               <div className="py-4 border-t-2 border-ink/10 flex justify-between items-center">
-                <span className="font-mono text-xs uppercase opacity-60">Session</span>
+                <span className="font-mono text-xs uppercase opacity-60">
+                  Session
+                </span>
                 <LogoutButton />
               </div>
             </div>
@@ -248,10 +265,11 @@ function NavLink({
     <a
       href={to}
       onClick={onClick}
-      className={`px-4 py-2 font-mono text-sm uppercase tracking-wider transition-all ${active
-        ? 'bg-ink text-paper'
-        : 'opacity-60 hover:opacity-100 hover:bg-ink/10'
-        }`}
+      className={`px-4 py-2 font-mono text-sm uppercase tracking-wider transition-all ${
+        active
+          ? 'bg-ink text-paper'
+          : 'opacity-60 hover:opacity-100 hover:bg-ink/10'
+      }`}
     >
       {children}
     </a>

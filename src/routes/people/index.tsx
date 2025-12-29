@@ -1,12 +1,13 @@
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
+import { LoadingSpinner } from "@/components/ui/loading"
 import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
 } from '@/components/ui/table'
 import { getPeople } from '@/server/functions/people'
 import { createFileRoute, Link } from '@tanstack/react-router'
@@ -16,6 +17,7 @@ export const Route = createFileRoute('/people/')({
     return { people: await getPeople() }
   },
   component: PeopleList,
+  pendingComponent: LoadingSpinner,
 })
 
 function PeopleList() {
@@ -72,9 +74,8 @@ function PeopleList() {
                   people.map((person, index) => (
                     <TableRow
                       key={person.id}
-                      className={`group ${
-                        index % 2 === 0 ? 'bg-white/30' : 'bg-ink/5'
-                      } hover:bg-ink/10 border-ink`}
+                      className={`group ${index % 2 === 0 ? 'bg-white/30' : 'bg-ink/5'
+                        } hover:bg-ink/10 border-ink`}
                     >
                       <TableCell className="font-medium">
                         <Link

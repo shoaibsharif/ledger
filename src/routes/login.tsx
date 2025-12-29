@@ -114,14 +114,6 @@ function Login() {
           </div>
         </div>
 
-        <div className="mt-8 text-center">
-          <p className="font-mono text-xs opacity-60">
-            First time?{' '}
-            <a href="/register" className="underline hover:no-underline">
-              Initialize ledger
-            </a>
-          </p>
-        </div>
       </div>
     </div>
   )
