@@ -1,19 +1,19 @@
 import { Button } from '@/components/ui/button'
 import {
-  Dialog,
-  DialogContent,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
 import { createDebt } from '@/server/functions/debts'
@@ -215,7 +215,10 @@ function AddDebt() {
                             !field.state.value && 'text-muted-foreground',
                           )}
                         >
-                          <SelectValue />
+                          <SelectValue>
+                            {people.find((p) => p.id === field.state.value)
+                              ?.name ?? 'Select a person'}
+                          </SelectValue>
                         </SelectTrigger>
                         <SelectContent>
                           {people.map((p) => (
