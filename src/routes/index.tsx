@@ -1,8 +1,13 @@
 import { AddPaymentModal } from '@/components/AddPaymentModal'
+import { MonthlyTrendChart } from '@/components/MonthlyTrendChart'
 import { Button } from '@/components/ui/button'
 import { LoadingSpinner } from '@/components/ui/loading'
 import { formatCurrency } from '@/lib/currencies'
-import { getDashboardSummary, getDebts } from '@/server/functions/debts'
+import {
+  getDashboardSummary,
+  getDebts,
+  getMonthlyTrend,
+} from '@/server/functions/debts'
 import { createFileRoute, Link } from '@tanstack/react-router'
 import { useState } from 'react'
 
@@ -10,9 +15,11 @@ export const Route = createFileRoute('/')({
   loader: async () => {
     const summary = await getDashboardSummary()
     const recentDebts = await getDebts()
+    const monthlyTrend = await getMonthlyTrend()
     return {
       summary,
       recentDebts: recentDebts.filter((d) => d.status !== 'settled'),
+      monthlyTrend,
     }
   },
   component: Dashboard,
@@ -20,7 +27,7 @@ export const Route = createFileRoute('/')({
 })
 
 function Dashboard() {
-  const { summary, recentDebts } = Route.useLoaderData()
+  const { summary, recentDebts, monthlyTrend } = Route.useLoaderData()
   const currencies = Object.keys(summary)
   const [modalOpen, setModalOpen] = useState(false)
   const [selectedDebt, setSelectedDebt] = useState<
@@ -56,6 +63,7 @@ function Dashboard() {
             </p>
             <Button
               render={<Link to="/debts/new" />}
+              nativeButton={false}
               className="w-full heavy-border font-bold uppercase tracking-widest text-sm py-6"
             >
               New Entry
@@ -74,6 +82,7 @@ function Dashboard() {
         </h1>
         <Button
           render={<Link to="/debts/new" />}
+          nativeButton={false}
           className="heavy-border font-bold uppercase tracking-widest text-xs py-4 px-6"
         >
           New Entry
@@ -114,6 +123,18 @@ function Dashboard() {
                   {formatCurrency(netPosition, currencies[0] || 'USD')}
                 </div>
               </div>
+            </div>
+          </section>
+
+          <section className="mb-12">
+            <div className="font-mono text-xs mb-4 border-b border-ink pb-2">
+              MONTHLY ACTIVITY
+            </div>
+            <div className="heavy-border p-6 bg-white/30">
+              <MonthlyTrendChart
+                data={monthlyTrend}
+                primaryCurrency={currencies[0] || 'USD'}
+              />
             </div>
           </section>
 

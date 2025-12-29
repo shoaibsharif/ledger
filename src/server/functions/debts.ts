@@ -145,7 +145,6 @@ export const getDashboardSummary = createServerFn().handler(async () => {
   const { d1 } = await authCheck()
   const db = getDb(d1)
 
-  // Group by currency and type
   const results = await db
     .select({
       currency: debts.currency,
@@ -157,7 +156,6 @@ export const getDashboardSummary = createServerFn().handler(async () => {
     .groupBy(debts.currency, debts.type)
     .all()
 
-  // Format into a more usable structure
   const summary: Record<string, { owedToMe: number; iOwe: number }> = {}
 
   results.forEach((row) => {
@@ -173,4 +171,65 @@ export const getDashboardSummary = createServerFn().handler(async () => {
   })
 
   return summary
+})
+
+export const getMonthlyTrend = createServerFn().handler(async () => {
+  const { d1 } = await authCheck()
+  const db = getDb(d1)
+
+  const results = await db
+    .select({
+      month: sql<string>`strftime('%Y-%m', ${debts.createdAt}, 'unixepoch')`,
+      currency: debts.currency,
+      type: debts.type,
+      totalAmount: sql<number>`SUM(${debts.amount})`,
+    })
+    .from(debts)
+    .groupBy(
+      sql`strftime('%Y-%m', ${debts.createdAt}, 'unixepoch')`,
+      debts.currency,
+      debts.type,
+    )
+    .orderBy(sql`strftime('%Y-%m', ${debts.createdAt}, 'unixepoch')`)
+    .all()
+
+  // Key: currency -> month -> { owed, iOwe }
+  const grouped: Record<
+    string,
+    Record<string, { owedToMe: number; iOwe: number }>
+  > = {}
+
+  results.forEach((row) => {
+    if (!grouped[row.currency]) {
+      grouped[row.currency] = {}
+    }
+    if (!grouped[row.currency][row.month]) {
+      grouped[row.currency][row.month] = { owedToMe: 0, iOwe: 0 }
+    }
+    if (row.type === 'owed_to_me') {
+      grouped[row.currency][row.month].owedToMe += Number(row.totalAmount)
+    } else {
+      grouped[row.currency][row.month].iOwe += Number(row.totalAmount)
+    }
+  })
+
+  // Flatten to: Array<{ month, currency, owedToMe, iOwe }>
+  const flatList: Array<{
+    month: string
+    currency: string
+    owedToMe: number
+    iOwe: number
+  }> = []
+
+  Object.entries(grouped).forEach(([currency, months]) => {
+    Object.entries(months).forEach(([month, data]) => {
+      flatList.push({
+        month,
+        currency,
+        ...data,
+      })
+    })
+  })
+
+  return flatList.sort((a, b) => a.month.localeCompare(b.month))
 })
