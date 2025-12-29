@@ -9,8 +9,11 @@ import { useState } from 'react'
 export const Route = createFileRoute('/')({
   loader: async () => {
     const summary = await getDashboardSummary()
-    const recentDebts = await getDebts({ data: { status: 'pending' } })
-    return { summary, recentDebts }
+    const recentDebts = await getDebts()
+    return {
+      summary,
+      recentDebts: recentDebts.filter((d) => d.status !== 'settled'),
+    }
   },
   component: Dashboard,
   pendingComponent: LoadingSpinner,
@@ -51,7 +54,10 @@ function Dashboard() {
               Your financial ledger is empty. Begin recording debts to track
               your financial relationships.
             </p>
-            <Button render={<Link to="/debts/new" />} className="w-full heavy-border font-bold uppercase tracking-widest text-sm py-6">
+            <Button
+              render={<Link to="/debts/new" />}
+              className="w-full heavy-border font-bold uppercase tracking-widest text-sm py-6"
+            >
               New Entry
             </Button>
           </div>
@@ -66,7 +72,10 @@ function Dashboard() {
         <h1 className="text-4xl font-black font-display tracking-tighter">
           LEDGER
         </h1>
-        <Button render={<Link to="/debts/new" />} className="heavy-border font-bold uppercase tracking-widest text-xs py-4 px-6">
+        <Button
+          render={<Link to="/debts/new" />}
+          className="heavy-border font-bold uppercase tracking-widest text-xs py-4 px-6"
+        >
           New Entry
         </Button>
       </header>
@@ -93,10 +102,11 @@ function Dashboard() {
                 </div>
               </div>
               <div
-                className={`p-6 ${netPosition >= 0
-                  ? 'bg-ink text-paper'
-                  : 'bg-crimson text-paper'
-                  }`}
+                className={`p-6 ${
+                  netPosition >= 0
+                    ? 'bg-ink text-paper'
+                    : 'bg-crimson text-paper'
+                }`}
               >
                 <div className="font-mono text-xs opacity-70 mb-2">NET</div>
                 <div className="text-4xl font-black font-mono-tight">
@@ -127,8 +137,9 @@ function Dashboard() {
                 return (
                   <div
                     key={debt.id}
-                    className={`group block heavy-border-b border-ink ${index % 2 === 0 ? 'bg-white/30' : 'bg-ink/5'
-                      } hover:bg-ink hover:text-paper transition-colors`}
+                    className={`group block heavy-border-b border-ink ${
+                      index % 2 === 0 ? 'bg-white/30' : 'bg-ink/5'
+                    } hover:bg-ink hover:text-paper transition-colors`}
                   >
                     <Link
                       to="/debts/$debtId"
@@ -149,10 +160,11 @@ function Dashboard() {
                         </div>
                         <div className="text-right">
                           <div
-                            className={`font-mono-tight text-xl font-bold ${debt.type === 'owed_to_me'
-                              ? 'text-forest'
-                              : 'text-crimson'
-                              } group-hover:text-inherit`}
+                            className={`font-mono-tight text-xl font-bold ${
+                              debt.type === 'owed_to_me'
+                                ? 'text-forest'
+                                : 'text-crimson'
+                            } group-hover:text-inherit`}
                           >
                             {debt.type === 'owed_to_me' ? '+' : '-'}
                             {formatCurrency(debt.amount, debt.currency)}
