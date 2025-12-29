@@ -1,11 +1,20 @@
+import { useState } from 'react'
+
 import { AddPaymentModal } from '@/components/AddPaymentModal'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
-import { LoadingSpinner } from "@/components/ui/loading"
+import { LoadingSpinner } from '@/components/ui/loading'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { formatCurrency } from '@/lib/currencies'
 import { getPerson } from '@/server/functions/people'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { useState } from 'react'
 
 export const Route = createFileRoute('/people/$personId')({
   loader: async ({ params }) => {
@@ -56,7 +65,7 @@ function PersonDetail() {
         >
           ← BACK TO CONTACTS
         </Link>
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-center gap-6">
             <Avatar className="h-20 w-20 border-3 border-ink">
               <AvatarFallback className="text-3xl font-black font-mono bg-paper text-ink">
@@ -105,8 +114,9 @@ function PersonDetail() {
                 NET POSITION
               </div>
               <div
-                className={`text-3xl font-black font-mono-tight ${totalOwedToMe - totalIOwe >= 0 ? '' : ''
-                  }`}
+                className={`text-3xl font-black font-mono-tight ${
+                  totalOwedToMe - totalIOwe >= 0 ? '' : ''
+                }`}
               >
                 {totalOwedToMe - totalIOwe >= 0 ? '+' : ''}
                 {formatCurrency(totalOwedToMe - totalIOwe, 'USD')}
@@ -130,91 +140,82 @@ function PersonDetail() {
                 </p>
               </div>
             ) : (
-              <div>
-                <div className="grid grid-cols-12 heavy-border-b border-ink bg-ink/10">
-                  <div className="col-span-4 p-3 font-mono text-xs font-bold">
-                    DESCRIPTION
-                  </div>
-                  <div className="col-span-2 p-3 font-mono text-xs font-bold">
-                    TYPE
-                  </div>
-                  <div className="col-span-2 p-3 font-mono text-xs font-bold text-right">
-                    AMOUNT
-                  </div>
-                  <div className="col-span-2 p-3 font-mono text-xs font-bold text-right">
-                    REMAINING
-                  </div>
-                  <div className="col-span-2 p-3 font-mono text-xs font-bold text-center">
-                    STATUS
-                  </div>
-                </div>
-                {person.debts.map((debt: any, index: number) => {
-                  const totalPaid =
-                    debt.payments?.reduce(
-                      (acc: number, p: any) => acc + p.amount,
-                      0,
-                    ) || 0
-                  const remaining = debt.amount - totalPaid
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Description</TableHead>
+                    <TableHead>Type</TableHead>
+                    <TableHead className="text-right">Amount</TableHead>
+                    <TableHead className="text-right">Remaining</TableHead>
+                    <TableHead className="text-center">Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {person.debts.map((debt: any) => {
+                    const totalPaid =
+                      debt.payments?.reduce(
+                        (acc: number, p: any) => acc + p.amount,
+                        0,
+                      ) || 0
+                    const remaining = debt.amount - totalPaid
 
-                  return (
-                    <div
-                      key={debt.id}
-                      className={`grid grid-cols-12 heavy-border-b border-ink ${index % 2 === 0 ? 'bg-white/30' : 'bg-ink/5'
-                        } group`}
-                    >
-                      <div className="col-span-4 p-4">
-                        <Link
-                          to="/debts/$debtId"
-                          params={{ debtId: debt.id }}
-                          className="hover:underline"
-                        >
-                          <div className="font-bold truncate">
-                            {debt.description || 'Unspecified'}
-                          </div>
-                          <div className="font-mono text-xs opacity-60 mt-1">
-                            {new Date(debt.createdAt!).toLocaleDateString()}
-                          </div>
-                        </Link>
-                      </div>
-                      <div className="col-span-2 p-4 flex items-center">
-                        <span
-                          className={`font-mono text-xs uppercase px-2 py-1 ${debt.type === 'owed_to_me'
-                            ? 'bg-forest/20 text-forest'
-                            : 'bg-crimson/20 text-crimson'
-                            }`}
-                        >
-                          {debt.type === 'owed_to_me'
-                            ? 'Receivable'
-                            : 'Payable'}
-                        </span>
-                      </div>
-                      <div className="col-span-2 p-4 flex items-center justify-end font-mono-tight font-bold">
-                        {debt.type === 'owed_to_me' ? '+' : '-'}
-                        {formatCurrency(debt.amount, debt.currency)}
-                      </div>
-                      <div className="col-span-2 p-4 flex items-center justify-end font-mono text-sm">
-                        {formatCurrency(remaining, debt.currency)}
-                      </div>
-                      <div className="col-span-2 p-4 flex items-center justify-center">
-                        {debt.status === 'settled' ? (
-                          <span className="font-mono text-xs uppercase bg-ink text-paper px-2 py-1">
-                            Settled
-                          </span>
-                        ) : (
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="font-mono text-xs uppercase py-1 px-2 hover:bg-ink hover:text-paper"
-                            onClick={() => openPaymentModal(debt)}
+                    return (
+                      <TableRow key={debt.id}>
+                        <TableCell>
+                          <Link
+                            to="/debts/$debtId"
+                            params={{ debtId: debt.id }}
+                            className="hover:underline"
                           >
-                            Pay
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  )
-                })}
-              </div>
+                            <div className="font-bold truncate">
+                              {debt.description || 'Unspecified'}
+                            </div>
+                            <div className="font-mono text-xs opacity-60 mt-1">
+                              {new Date(debt.createdAt!).toLocaleDateString()}
+                            </div>
+                          </Link>
+                        </TableCell>
+                        <TableCell>
+                          <span
+                            className={`font-mono text-xs uppercase px-2 py-1 ${
+                              debt.type === 'owed_to_me'
+                                ? 'bg-forest/20 text-forest'
+                                : 'bg-crimson/20 text-crimson'
+                            }`}
+                          >
+                            {debt.type === 'owed_to_me'
+                              ? 'Receivable'
+                              : 'Payable'}
+                          </span>
+                        </TableCell>
+                        <TableCell className="text-right font-mono-tight font-bold">
+                          {debt.type === 'owed_to_me' ? '+' : '-'}
+                          {formatCurrency(debt.amount, debt.currency)}
+                        </TableCell>
+                        <TableCell className="text-right font-mono text-sm">
+                          {formatCurrency(remaining, debt.currency)}
+                        </TableCell>
+                        <TableCell className="text-center">
+                          {debt.status === 'settled' ? (
+                            <span className="font-mono text-xs uppercase bg-ink text-paper px-2 py-1">
+                              Settled
+                            </span>
+                          ) : (
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="font-mono text-xs uppercase py-1 px-2 hover:bg-ink hover:text-paper"
+                              onClick={() => openPaymentModal(debt)}
+                            >
+                              Pay
+                            </Button>
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })}
+                </TableBody>
+              </Table>
             )}
           </div>
 
