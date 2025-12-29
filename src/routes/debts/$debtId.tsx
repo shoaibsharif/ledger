@@ -8,7 +8,10 @@ import { formatCurrency } from '@/lib/currencies'
 import { cn } from '@/lib/utils'
 import { getDebt } from '@/server/functions/debts'
 import { getPeople } from '@/server/functions/people'
+import { deletePayment } from '@/server/functions/payments'
 import { createFileRoute, Link } from '@tanstack/react-router'
+import { Delete01Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 
 export const Route = createFileRoute('/debts/$debtId')({
   loader: async ({ params: { debtId } }) => {
@@ -173,48 +176,66 @@ function DebtDetails() {
                       'absolute -left-[37px] top-2 w-3 h-3 rounded-full border-2 border-ink bg-paper',
                     )}
                   />
-                  <div className="font-bold text-lg">
-                    {formatCurrency(payment.amount, debt.currency)}
-                  </div>
-                  <div
-                    className={cn(
-                      'font-mono text-xs text-muted-foreground mt-1 flex items-center gap-2',
-                    )}
-                  >
-                    <span>
-                      {payment.paidAt
-                        ? new Date(payment.paidAt).toLocaleDateString(
-                            undefined,
-                            {
-                              month: 'short',
-                              day: 'numeric',
-                              year: 'numeric',
-                            },
-                          )
-                        : 'N/A'}
-                    </span>
-                    <span>·</span>
-                    <span>
-                      {payment.paidAt
-                        ? new Date(payment.paidAt).toLocaleTimeString(
-                            undefined,
-                            {
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            },
-                          )
-                        : 'N/A'}
-                    </span>
-                  </div>
-                  {payment.notes && (
-                    <div
-                      className={cn(
-                        'mt-2 text-sm opacity-80 pl-4 border-l-2 border-ink/20',
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <div className="font-bold text-lg">
+                        {formatCurrency(payment.amount, debt.currency)}
+                      </div>
+                      <div
+                        className={cn(
+                          'font-mono text-xs text-muted-foreground mt-1 flex items-center gap-2',
+                        )}
+                      >
+                        <span>
+                          {payment.paidAt
+                            ? new Date(payment.paidAt).toLocaleDateString(
+                                undefined,
+                                {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  year: 'numeric',
+                                },
+                              )
+                            : 'N/A'}
+                        </span>
+                        <span>·</span>
+                        <span>
+                          {payment.paidAt
+                            ? new Date(payment.paidAt).toLocaleTimeString(
+                                undefined,
+                                {
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                },
+                              )
+                            : 'N/A'}
+                        </span>
+                      </div>
+                      {payment.notes && (
+                        <div
+                          className={cn(
+                            'mt-2 text-sm opacity-80 pl-4 border-l-2 border-ink/20',
+                          )}
+                        >
+                          {payment.notes}
+                        </div>
                       )}
-                    >
-                      {payment.notes}
                     </div>
-                  )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={async () => {
+                        if (confirm('Delete this payment?')) {
+                          await deletePayment({ data: payment.id })
+                          window.location.reload()
+                        }
+                      }}
+                      className="opacity-50 hover:opacity-100 hover:text-crimson hover:bg-crimson/10 transition-all p-1 h-auto"
+                      title="Delete payment"
+                    >
+                      <HugeiconsIcon icon={Delete01Icon} className="w-5 h-5" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>

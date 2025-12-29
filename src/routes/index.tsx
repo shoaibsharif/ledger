@@ -51,8 +51,8 @@ function Dashboard() {
               Your financial ledger is empty. Begin recording debts to track
               your financial relationships.
             </p>
-            <Button className="w-full heavy-border font-bold uppercase tracking-widest text-sm py-6">
-              <Link to="/debts/new">New Entry</Link>
+            <Button render={<Link to="/debts/new" />} className="w-full heavy-border font-bold uppercase tracking-widest text-sm py-6">
+              New Entry
             </Button>
           </div>
         </main>
@@ -66,8 +66,8 @@ function Dashboard() {
         <h1 className="text-4xl font-black font-display tracking-tighter">
           LEDGER
         </h1>
-        <Button className="heavy-border font-bold uppercase tracking-widest text-xs py-4 px-6">
-          <Link to="/debts/new">New Entry</Link>
+        <Button render={<Link to="/debts/new" />} className="heavy-border font-bold uppercase tracking-widest text-xs py-4 px-6">
+          New Entry
         </Button>
       </header>
 
