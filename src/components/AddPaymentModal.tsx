@@ -1,3 +1,6 @@
+import { useEffect } from 'react'
+import { z } from 'zod'
+
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -9,11 +12,10 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { formatCurrency } from '@/lib/currencies'
-import { recordPayment } from '@/server/functions/payments'
 import { useForm } from '@tanstack/react-form'
 import { useRouter } from '@tanstack/react-router'
-import { z } from 'zod'
+import { formatCurrency } from '@/lib/currencies'
+import { recordPayment } from '@/server/functions/payments'
 
 interface AddPaymentModalProps {
   open: boolean
@@ -42,136 +44,34 @@ export function AddPaymentModal({
       notes: '',
     },
     onSubmit: async ({ value }) => {
-      // #region agent log
       const payloadData = {
         debtId: debt.id,
         amount: Number(value.amount),
         paidAt: value.paidAt ? new Date(value.paidAt) : undefined,
         notes: value.notes,
       }
-      fetch(
-        'http://127.0.0.1:7244/ingest/17bb0030-c9b7-4ca8-8601-8dba0f964744',
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            location: 'AddPaymentModal.tsx:onSubmit-entry',
-            message: 'onSubmit handler called',
-            data: {
-              rawValue: value,
-              parsedPayload: payloadData,
-              amountIsNaN: isNaN(Number(value.amount)),
-              dateIsValid: value.paidAt
-                ? !isNaN(new Date(value.paidAt).getTime())
-                : 'undefined',
-            },
-            timestamp: Date.now(),
-            sessionId: 'debug-session',
-            hypothesisId: 'D,E',
-          }),
-        },
-      ).catch(() => {})
-      // #endregion
       try {
-        const result = await recordPayment({
+        await recordPayment({
           data: payloadData,
         })
-        // #region agent log
-        fetch(
-          'http://127.0.0.1:7244/ingest/17bb0030-c9b7-4ca8-8601-8dba0f964744',
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              location: 'AddPaymentModal.tsx:onSubmit-success',
-              message: 'recordPayment succeeded',
-              data: { result },
-              timestamp: Date.now(),
-              sessionId: 'debug-session',
-              hypothesisId: 'E',
-            }),
-          },
-        ).catch(() => {})
-        // #endregion
-        // #region agent log
-        fetch(
-          'http://127.0.0.1:7244/ingest/17bb0030-c9b7-4ca8-8601-8dba0f964744',
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              location: 'AddPaymentModal.tsx:before-invalidate',
-              message: 'About to call router.invalidate()',
-              data: {},
-              timestamp: Date.now(),
-              sessionId: 'debug-session',
-              hypothesisId: 'F,G,H',
-            }),
-          },
-        ).catch(() => {})
-        // #endregion
         await router.invalidate()
-        // #region agent log
-        fetch(
-          'http://127.0.0.1:7244/ingest/17bb0030-c9b7-4ca8-8601-8dba0f964744',
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              location: 'AddPaymentModal.tsx:after-invalidate',
-              message: 'router.invalidate() completed',
-              data: {},
-              timestamp: Date.now(),
-              sessionId: 'debug-session',
-              hypothesisId: 'F,G,H',
-            }),
-          },
-        ).catch(() => {})
-        // #endregion
         onOpenChange(false)
-        // #region agent log
-        fetch(
-          'http://127.0.0.1:7244/ingest/17bb0030-c9b7-4ca8-8601-8dba0f964744',
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              location: 'AddPaymentModal.tsx:after-close',
-              message: 'onOpenChange(false) called',
-              data: {},
-              timestamp: Date.now(),
-              sessionId: 'debug-session',
-              hypothesisId: 'G,I',
-            }),
-          },
-        ).catch(() => {})
-        // #endregion
       } catch (error) {
-        // #region agent log
-        fetch(
-          'http://127.0.0.1:7244/ingest/17bb0030-c9b7-4ca8-8601-8dba0f964744',
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              location: 'AddPaymentModal.tsx:onSubmit-error',
-              message: 'recordPayment threw error',
-              data: {
-                error: String(error),
-                errorName: (error as Error)?.name,
-                errorMessage: (error as Error)?.message,
-              },
-              timestamp: Date.now(),
-              sessionId: 'debug-session',
-              hypothesisId: 'E',
-            }),
-          },
-        ).catch(() => {})
-        // #endregion
+        console.error('Failed to record payment', error)
         throw error
       }
     },
   })
+
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        amount: remainingAmount,
+        paidAt: new Date().toISOString().split('T')[0],
+        notes: '',
+      })
+    }
+  }, [open, remainingAmount])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -188,30 +88,6 @@ export function AddPaymentModal({
           onSubmit={(e) => {
             e.preventDefault()
             e.stopPropagation()
-            // #region agent log
-            fetch(
-              'http://127.0.0.1:7244/ingest/17bb0030-c9b7-4ca8-8601-8dba0f964744',
-              {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  location: 'AddPaymentModal.tsx:onSubmit',
-                  message: 'Form submit triggered',
-                  data: {
-                    formValues: form.state.values,
-                    isValid: form.state.isValid,
-                    canSubmit: form.state.canSubmit,
-                    isSubmitting: form.state.isSubmitting,
-                    errors: form.state.errors,
-                    fieldMeta: form.state.fieldMeta,
-                  },
-                  timestamp: Date.now(),
-                  sessionId: 'debug-session',
-                  hypothesisId: 'A,B,C',
-                }),
-              },
-            ).catch(() => {})
-            // #endregion
             form.handleSubmit()
           }}
           className="space-y-4"
@@ -232,36 +108,12 @@ export function AddPaymentModal({
                     id="amount"
                     type="number"
                     step="0.01"
-                    value={field.state.value}
+                    value={field.state.value || ''}
                     onBlur={field.handleBlur}
-                    onChange={(e) => {
-                      // #region agent log
-                      fetch(
-                        'http://127.0.0.1:7244/ingest/17bb0030-c9b7-4ca8-8601-8dba0f964744',
-                        {
-                          method: 'POST',
-                          headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({
-                            location: 'AddPaymentModal.tsx:amount-onChange',
-                            message: 'Amount field changed',
-                            data: {
-                              rawValue: e.target.value,
-                              valueAsNumber: e.target.valueAsNumber,
-                              isNaN: isNaN(e.target.valueAsNumber),
-                              fieldErrors: field.state.meta.errors,
-                            },
-                            timestamp: Date.now(),
-                            sessionId: 'debug-session',
-                            hypothesisId: 'A,B',
-                          }),
-                        },
-                      ).catch(() => {})
-                      // #endregion
-                      field.handleChange(e.target.valueAsNumber)
-                    }}
+                    onChange={(e) => field.handleChange(e.target.valueAsNumber)}
                     className="border-zinc-700 bg-zinc-950"
                   />
-                  {field.state.meta.errors ? (
+                  {field.state.meta.errors.length > 0 ? (
                     <em className="text-red-500 text-xs">
                       {field.state.meta.errors.join(', ')}
                     </em>

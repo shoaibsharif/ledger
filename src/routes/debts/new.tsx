@@ -82,13 +82,6 @@ function AddDebt() {
 
   return (
     <div className="min-h-screen bg-paper flex flex-col md:flex-row">
-      <Link
-        to="/debts"
-        className="absolute top-6 left-6 z-50 font-mono text-xs uppercase tracking-widest opacity-60 hover:opacity-100 text-ink"
-      >
-        ← CANCEL
-      </Link>
-
       <form
         onSubmit={(e) => {
           e.preventDefault()
@@ -102,12 +95,18 @@ function AddDebt() {
           children={(typeField) => (
             <div
               className={cn(
-                'w-full md:w-1/2 min-h-[40vh] md:min-h-screen flex flex-col justify-center items-center p-8 md:p-12',
+                'relative w-full md:w-1/2 min-h-[40vh] md:min-h-screen flex flex-col justify-center items-center p-8 md:p-12',
                 typeField.state.value === 'owed_to_me'
                   ? 'bg-forest text-paper'
                   : 'bg-crimson text-paper',
               )}
             >
+              <Link
+                to="/debts"
+                className="absolute top-6 left-6 font-mono text-xs uppercase tracking-widest opacity-60 hover:opacity-100 text-paper"
+              >
+                ← CANCEL
+              </Link>
               <div className="absolute top-6 right-6 flex flex-col gap-2 items-end font-mono text-xs">
                 <button
                   type="button"
@@ -142,8 +141,8 @@ function AddDebt() {
                 <form.Field
                   name="amount"
                   children={(field) => (
-                    <div className="relative">
-                      <span className="absolute -left-8 top-1/2 -translate-y-1/2 text-4xl md:text-6xl font-display opacity-50">
+                    <div className="relative flex items-baseline">
+                      <span className="text-[clamp(1rem,5vw,2.5rem)] font-display opacity-50 mr-2">
                         $
                       </span>
                       <input
@@ -155,8 +154,9 @@ function AddDebt() {
                         }
                         placeholder="0"
                         className={cn(
-                          'w-full bg-transparent border-none p-0 text-[15vw] md:text-[10vw] font-black font-mono leading-none focus:outline-none placeholder:opacity-30 appearance-none',
+                          'w-full bg-transparent border-none p-0 font-black font-mono leading-none focus:outline-none placeholder:opacity-30 appearance-none',
                           'text-paper placeholder:text-paper',
+                          'text-[clamp(3rem,15vw,8rem)] md:text-[clamp(3rem,10vw,6rem)]',
                         )}
                         autoFocus
                       />

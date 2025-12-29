@@ -106,6 +106,7 @@ export const updateDebt = createServerFn()
     zodValidator(
       z.object({
         id: z.string(),
+        personId: z.string().optional(),
         amount: z.number().optional(),
         currency: z.string().optional(),
         description: z.string().optional(),

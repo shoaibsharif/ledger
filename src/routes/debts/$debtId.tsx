@@ -1,16 +1,20 @@
+import { useState } from 'react'
+
 import { AddPaymentModal } from '@/components/AddPaymentModal'
+import { EditDebtModal } from '@/components/EditDebtModal'
 import { Button } from '@/components/ui/button'
 import { LoadingSpinner } from '@/components/ui/loading'
 import { formatCurrency } from '@/lib/currencies'
 import { cn } from '@/lib/utils'
 import { getDebt } from '@/server/functions/debts'
+import { getPeople } from '@/server/functions/people'
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { useState } from 'react'
 
 export const Route = createFileRoute('/debts/$debtId')({
   loader: async ({ params: { debtId } }) => {
     return {
       debt: await getDebt({ data: { id: debtId } }),
+      people: await getPeople(),
     }
   },
   component: DebtDetails,
@@ -18,10 +22,11 @@ export const Route = createFileRoute('/debts/$debtId')({
 })
 
 function DebtDetails() {
-  const { debt } = Route.useLoaderData()
-  const [modalOpen, setModalOpen] = useState(false)
+  const { debt, people } = Route.useLoaderData()
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false)
+  const [editModalOpen, setEditModalOpen] = useState(false)
 
-  const totalPaid = debt.payments?.reduce((acc, p) => acc + p.amount, 0) || 0
+  const totalPaid = debt.payments.reduce((acc, p) => acc + p.amount, 0)
   const remaining = debt.amount - totalPaid
   const progress = (totalPaid / debt.amount) * 100
 
@@ -34,9 +39,9 @@ function DebtDetails() {
     <div className="min-h-screen flex flex-col md:flex-row">
       <div
         className={cn(
-          'fixed inset-0 z-0',
+          'relative min-h-[60vh] flex flex-col justify-center items-center',
           theme.bg,
-          'md:relative md:w-1/2 md:h-screen md:flex md:flex-col md:justify-center md:items-center p-8 md:p-12',
+          'md:fixed md:inset-y-0 md:left-0 md:w-1/2 md:h-screen p-8 md:p-12',
         )}
       >
         <Link
@@ -57,34 +62,24 @@ function DebtDetails() {
           >
             {isOwedToMe ? 'Receivable' : 'Payable'}
           </div>
-          <div className="relative">
-            <h1
-              className={cn(
-                'text-[12vw] md:text-[8vw] font-black font-display leading-none tracking-tighter',
-                theme.text,
-              )}
-            >
-              {formatCurrency(remaining, debt.currency).replace(
-                /[^0-9.,]/g,
-                '',
-              )}
-            </h1>
-            <span
-              className={cn(
-                'absolute -top-4 -left-6 md:-left-8 text-3xl md:text-5xl font-display font-bold opacity-40',
-                theme.text,
-              )}
-            >
+          <h1
+            className={cn(
+              'text-[12vw] md:text-[8vw] font-black font-display leading-none tracking-tighter inline-flex items-baseline justify-center',
+              theme.text,
+            )}
+          >
+            <span className="text-[0.35em] font-bold opacity-40 -translate-y-[0.5em] mr-1">
               {formatCurrency(0, debt.currency).replace(/[0-9.,\s]/g, '')}
             </span>
-          </div>
+            {formatCurrency(remaining, debt.currency).replace(/[^0-9.,]/g, '')}
+          </h1>
           <p
             className={cn(
               'text-xl md:text-2xl font-medium opacity-80 mt-6',
               theme.text,
             )}
           >
-            {debt.person?.name || 'Unknown'}
+            {debt.person.name || 'Unknown'}
           </p>
           <p className={cn('font-mono text-sm opacity-60 mt-2', theme.text)}>
             {debt.description || 'No description'}
@@ -108,25 +103,35 @@ function DebtDetails() {
             <span>Total: {formatCurrency(debt.amount, debt.currency)}</span>
           </div>
           {debt.status !== 'settled' && (
-            <div className="mt-8">
+            <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center items-center">
               <Button
-                onClick={() => setModalOpen(true)}
+                onClick={() => setPaymentModalOpen(true)}
                 className={cn(
                   'rounded-full h-14 px-8 font-bold uppercase tracking-widest text-sm border-2 border-current hover:bg-white hover:text-ink transition-colors',
                   theme.text,
-                  'bg-transparent',
+                  'bg-transparent w-full sm:w-auto',
                 )}
               >
                 Record Payment
+              </Button>
+              <Button
+                onClick={() => setEditModalOpen(true)}
+                variant="ghost"
+                className={cn(
+                  'rounded-full h-14 px-8 font-bold uppercase tracking-widest text-sm border-2 border-current hover:bg-white hover:text-ink transition-colors',
+                  theme.text,
+                  'bg-transparent w-full sm:w-auto',
+                )}
+              >
+                Edit
               </Button>
             </div>
           )}
         </div>
       </div>
-
       <div
         className={cn(
-          'relative z-10 bg-paper md:w-1/2 min-h-[50vh] md:h-screen overflow-auto',
+          'relative z-10 bg-paper min-h-[50vh] md:ml-[50%] md:w-1/2 md:h-screen overflow-auto',
           'border-t md:border-t-0 md:border-l-3 border-ink',
         )}
       >
@@ -161,7 +166,7 @@ function DebtDetails() {
               <div
                 className={cn('absolute left-0 top-0 bottom-0 w-px bg-ink/20')}
               />
-              {debt.payments.map((payment: any) => (
+              {debt.payments.map((payment) => (
                 <div key={payment.id} className="relative pb-8 last:pb-0">
                   <div
                     className={cn(
@@ -177,18 +182,28 @@ function DebtDetails() {
                     )}
                   >
                     <span>
-                      {new Date(payment.paidAt!).toLocaleDateString(undefined, {
-                        month: 'short',
-                        day: 'numeric',
-                        year: 'numeric',
-                      })}
+                      {payment.paidAt
+                        ? new Date(payment.paidAt).toLocaleDateString(
+                            undefined,
+                            {
+                              month: 'short',
+                              day: 'numeric',
+                              year: 'numeric',
+                            },
+                          )
+                        : 'N/A'}
                     </span>
                     <span>·</span>
                     <span>
-                      {new Date(payment.paidAt!).toLocaleTimeString(undefined, {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      })}
+                      {payment.paidAt
+                        ? new Date(payment.paidAt).toLocaleTimeString(
+                            undefined,
+                            {
+                              hour: '2-digit',
+                              minute: '2-digit',
+                            },
+                          )
+                        : 'N/A'}
                     </span>
                   </div>
                   {payment.notes && (
@@ -213,11 +228,13 @@ function DebtDetails() {
               <div>
                 <div className="opacity-60 text-xs">Created</div>
                 <div>
-                  {new Date(debt.createdAt!).toLocaleDateString(undefined, {
-                    month: 'long',
-                    day: 'numeric',
-                    year: 'numeric',
-                  })}
+                  {debt.createdAt
+                    ? new Date(debt.createdAt).toLocaleDateString(undefined, {
+                        month: 'long',
+                        day: 'numeric',
+                        year: 'numeric',
+                      })
+                    : 'N/A'}
                 </div>
               </div>
               <div>
@@ -238,12 +255,17 @@ function DebtDetails() {
           </div>
         </div>
       </div>
-
       <AddPaymentModal
-        open={modalOpen}
-        onOpenChange={setModalOpen}
+        open={paymentModalOpen}
+        onOpenChange={setPaymentModalOpen}
         debt={debt}
         remainingAmount={remaining}
+      />
+      <EditDebtModal
+        open={editModalOpen}
+        onOpenChange={setEditModalOpen}
+        debt={debt}
+        people={people}
       />
     </div>
   )
