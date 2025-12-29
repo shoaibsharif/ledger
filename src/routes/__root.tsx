@@ -14,6 +14,7 @@ import { Menu01Icon, Cancel01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 
 import { LoadingPage } from '@/components/ui/loading'
+import { AlertDialogProvider } from '@/lib/alert-dialog'
 import { useEffect, useState } from 'react'
 import { Logo } from '../components/ui/logo'
 import { startAutoSync, stopAutoSync } from '../lib/sync'
@@ -98,12 +99,14 @@ export const Route = createRootRoute({
     }, [])
 
     return (
-      <div className="min-h-screen bg-paper flex flex-col">
-        <Nav />
-        <main className="flex-1">
-          <Outlet />
-        </main>
-      </div>
+      <AlertDialogProvider>
+        <div className="min-h-screen bg-paper flex flex-col">
+          <Nav />
+          <main className="flex-1">
+            <Outlet />
+          </main>
+        </div>
+      </AlertDialogProvider>
     )
   },
 

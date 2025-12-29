@@ -6,10 +6,11 @@ import { Button } from '@/components/ui/button'
 import { LoadingSpinner } from '@/components/ui/loading'
 import { formatCurrency } from '@/lib/currencies'
 import { cn } from '@/lib/utils'
+import { useAlertDialog } from '@/lib/alert-dialog'
 import { getDebt } from '@/server/functions/debts'
 import { getPeople } from '@/server/functions/people'
 import { deletePayment } from '@/server/functions/payments'
-import { createFileRoute, Link } from '@tanstack/react-router'
+import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
 import { Delete01Icon } from '@hugeicons/core-free-icons'
 import { HugeiconsIcon } from '@hugeicons/react'
 
@@ -28,6 +29,8 @@ function DebtDetails() {
   const { debt, people } = Route.useLoaderData()
   const [paymentModalOpen, setPaymentModalOpen] = useState(false)
   const [editModalOpen, setEditModalOpen] = useState(false)
+  const { alert } = useAlertDialog()
+  const router = useRouter()
 
   const totalPaid = debt.payments.reduce((acc, p) => acc + p.amount, 0)
   const remaining = debt.amount - totalPaid
@@ -224,11 +227,16 @@ function DebtDetails() {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={async () => {
-                        if (confirm('Delete this payment?')) {
-                          await deletePayment({ data: payment.id })
-                          window.location.reload()
-                        }
+                      onClick={() => {
+                        alert({
+                          title: 'Delete Payment',
+                          description:
+                            'Are you sure you want to delete this payment?',
+                          onConfirm: async () => {
+                            await deletePayment({ data: payment.id })
+                            router.invalidate()
+                          },
+                        })
                       }}
                       className="opacity-50 hover:opacity-100 hover:text-crimson hover:bg-crimson/10 transition-all p-1 h-auto"
                       title="Delete payment"
