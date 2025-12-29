@@ -182,7 +182,7 @@ function Nav() {
 
       {/* Mobile Menu Overlay */}
       {isMobileMenuOpen && (
-        <div className="fixed inset-0 z-[100] bg-paper flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-300">
+        <div className="fixed inset-0 z-100 bg-paper flex flex-col animate-in fade-in slide-in-from-bottom-4 duration-300">
           <div className="p-6 flex justify-between items-center border-b-3 border-ink">
             <div className="flex items-center gap-3">
               <Logo className="w-8 h-8" />
@@ -249,8 +249,8 @@ function NavLink({
       href={to}
       onClick={onClick}
       className={`px-4 py-2 font-mono text-sm uppercase tracking-wider transition-all ${active
-          ? 'bg-ink text-paper'
-          : 'opacity-60 hover:opacity-100 hover:bg-ink/10'
+        ? 'bg-ink text-paper'
+        : 'opacity-60 hover:opacity-100 hover:bg-ink/10'
         }`}
     >
       {children}
