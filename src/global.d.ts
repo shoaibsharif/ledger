@@ -3,7 +3,6 @@ export { };
 declare global {
   interface Env {
     DB: D1Database;
-    AUTH_EMAIL: string;
     AUTH_PASSWORD_HASH: string;
   }
 }
