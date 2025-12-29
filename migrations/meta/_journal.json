@@ -15,6 +15,13 @@
       "when": 1766960452480,
       "tag": "0001_silly_zzzax",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1766996215235,
+      "tag": "0002_wise_kree",
+      "breakpoints": true
     }
   ]
 }

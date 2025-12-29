@@ -1,4 +1,4 @@
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import { integer, real, sqliteTable, text } from "drizzle-orm/sqlite-core";
 
 // Users table (single user for now)
@@ -7,7 +7,7 @@ export const users = sqliteTable("users", {
   email: text("email").unique().notNull(),
   password: text("password").notNull(),
   createdAt: integer("created_at", { mode: "timestamp" }).default(
-    new Date()
+    sql`(unixepoch())`
   ),
 });
 
@@ -17,7 +17,7 @@ export const sessions = sqliteTable("sessions", {
   token: text("token").unique().notNull(),
   expiresAt: integer("expires_at", { mode: "timestamp" }).notNull(),
   createdAt: integer("created_at", { mode: "timestamp" }).default(
-    new Date()
+    sql`(unixepoch())`
   ),
 });
 
@@ -29,10 +29,10 @@ export const people = sqliteTable("people", {
   phone: text("phone"),
   notes: text("notes"),
   createdAt: integer("created_at", { mode: "timestamp" }).default(
-    new Date()
+    sql`(unixepoch())`
   ),
   updatedAt: integer("updated_at", { mode: "timestamp" }).default(
-    new Date()
+    sql`(unixepoch())`
   ),
 });
 
@@ -51,10 +51,10 @@ export const debts = sqliteTable("debts", {
     .default("pending"),
   dueDate: integer("due_date", { mode: "timestamp" }),
   createdAt: integer("created_at", { mode: "timestamp" }).default(
-    new Date()
+    sql`(unixepoch())`
   ),
   updatedAt: integer("updated_at", { mode: "timestamp" }).default(
-    new Date()
+    sql`(unixepoch())`
   ),
 });
 
@@ -65,10 +65,10 @@ export const payments = sqliteTable("payments", {
     .notNull()
     .references(() => debts.id, { onDelete: "cascade" }),
   amount: real("amount").notNull(),
-  paidAt: integer("paid_at", { mode: "timestamp" }).default(new Date()),
+  paidAt: integer("paid_at", { mode: "timestamp" }).default(sql`(unixepoch())`),
   notes: text("notes"),
   createdAt: integer("created_at", { mode: "timestamp" }).default(
-    new Date()
+    sql`(unixepoch())`
   ),
 });
 

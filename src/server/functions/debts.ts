@@ -93,10 +93,13 @@ export const createDebt = createServerFn()
     const { d1 } = await authCheck()
     const db = getDb(d1)
     const id = crypto.randomUUID()
+    const now = new Date()
     await db.insert(debts).values({
       id,
       ...data,
       status: 'pending',
+      createdAt: now,
+      updatedAt: now,
     })
     return { id }
   })
