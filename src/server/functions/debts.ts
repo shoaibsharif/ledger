@@ -240,6 +240,7 @@ export const increaseDebt = createServerFn()
       z.object({
         debtId: z.string(),
         amount: z.number().positive(),
+        paidAt: z.date().optional(),
         notes: z.string().optional(),
       }),
     ),
@@ -261,7 +262,7 @@ export const increaseDebt = createServerFn()
       id: paymentId,
       debtId: data.debtId,
       amount: data.amount,
-      paidAt: now,
+      paidAt: data.paidAt ?? now,
       notes: data.notes,
       paymentType: 'adjustment',
     })
