@@ -22,6 +22,13 @@
       "when": 1766996215235,
       "tag": "0002_wise_kree",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1767303732990,
+      "tag": "0003_quick_scrambler",
+      "breakpoints": true
     }
   ]
 }

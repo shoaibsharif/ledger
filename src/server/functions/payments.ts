@@ -25,6 +25,7 @@ export const recordPayment = createServerFn()
         amount: z.number(),
         paidAt: z.date().optional(),
         notes: z.string().optional(),
+        paymentType: z.enum(['payment', 'adjustment']).optional(),
       }),
     ),
   )
@@ -33,21 +34,25 @@ export const recordPayment = createServerFn()
     const db = getDb(d1)
     const id = crypto.randomUUID()
 
-    // Insert the payment (no transaction - D1 has issues with db.transaction())
+    const paymentType = data.paymentType ?? 'payment'
+
     await db.insert(payments).values({
       id,
-      ...data,
+      debtId: data.debtId,
+      amount: data.amount,
+      paidAt: data.paidAt,
+      notes: data.notes,
+      paymentType,
     })
 
-    // Update debt status
     const debt = await db.query.debts.findFirst({
       where: eq(debts.id, data.debtId),
       with: { payments: true },
     })
 
     if (debt) {
-      const totalPaid = debt.payments.reduce((acc, p) => acc + p.amount, 0)
       let status: 'pending' | 'partial' | 'settled' = 'partial'
+      const totalPaid = debt.payments.reduce((acc, p) => acc + p.amount, 0)
       if (totalPaid >= debt.amount) {
         status = 'settled'
       } else if (totalPaid === 0) {

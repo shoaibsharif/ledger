@@ -1,5 +1,8 @@
 import { useState } from 'react'
 
+import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
+import { Add01Icon, Delete01Icon } from '@hugeicons/core-free-icons'
+import { HugeiconsIcon } from '@hugeicons/react'
 import { AddPaymentModal } from '@/components/AddPaymentModal'
 import { EditDebtModal } from '@/components/EditDebtModal'
 import { Button } from '@/components/ui/button'
@@ -10,9 +13,6 @@ import { useAlertDialog } from '@/lib/alert-dialog'
 import { getDebt } from '@/server/functions/debts'
 import { getPeople } from '@/server/functions/people'
 import { deletePayment } from '@/server/functions/payments'
-import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
-import { Delete01Icon } from '@hugeicons/core-free-icons'
-import { HugeiconsIcon } from '@hugeicons/react'
 
 export const Route = createFileRoute('/debts/$debtId')({
   loader: async ({ params: { debtId } }) => {
@@ -28,13 +28,15 @@ export const Route = createFileRoute('/debts/$debtId')({
 function DebtDetails() {
   const { debt, people } = Route.useLoaderData()
   const [paymentModalOpen, setPaymentModalOpen] = useState(false)
+  const [adjustmentModalOpen, setAdjustmentModalOpen] = useState(false)
   const [editModalOpen, setEditModalOpen] = useState(false)
   const { alert } = useAlertDialog()
   const router = useRouter()
 
-  const totalPaid = debt.payments.reduce((acc, p) => acc + p.amount, 0)
+  const paymentsOnly = debt.payments.filter((p) => p.paymentType !== 'adjustment')
+  const totalPaid = paymentsOnly.reduce((acc, p) => acc + p.amount, 0)
   const remaining = debt.amount - totalPaid
-  const progress = (totalPaid / debt.amount) * 100
+  const progress = debt.amount > 0 ? (totalPaid / debt.amount) * 100 : 0
 
   const isOwedToMe = debt.type === 'owed_to_me'
   const theme = isOwedToMe
@@ -121,6 +123,16 @@ function DebtDetails() {
                 Record Payment
               </Button>
               <Button
+                onClick={() => setAdjustmentModalOpen(true)}
+                className={cn(
+                  'rounded-full h-14 px-8 font-bold uppercase tracking-widest text-sm border-2 border-current hover:bg-white hover:text-ink transition-colors',
+                  theme.text,
+                  'bg-transparent w-full sm:w-auto',
+                )}
+              >
+                Increase Amount
+              </Button>
+              <Button
                 onClick={() => setEditModalOpen(true)}
                 variant="ghost"
                 className={cn(
@@ -172,80 +184,101 @@ function DebtDetails() {
               <div
                 className={cn('absolute left-0 top-0 bottom-0 w-px bg-ink/20')}
               />
-              {debt.payments.map((payment) => (
-                <div key={payment.id} className="relative pb-8 last:pb-0">
-                  <div
-                    className={cn(
-                      'absolute -left-[37px] top-2 w-3 h-3 rounded-full border-2 border-ink bg-paper',
-                    )}
-                  />
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <div className="font-bold text-lg">
-                        {formatCurrency(payment.amount, debt.currency)}
-                      </div>
-                      <div
-                        className={cn(
-                          'font-mono text-xs text-muted-foreground mt-1 flex items-center gap-2',
-                        )}
-                      >
-                        <span>
-                          {payment.paidAt
-                            ? new Date(payment.paidAt).toLocaleDateString(
-                                undefined,
-                                {
-                                  month: 'short',
-                                  day: 'numeric',
-                                  year: 'numeric',
-                                },
-                              )
-                            : 'N/A'}
-                        </span>
-                        <span>·</span>
-                        <span>
-                          {payment.paidAt
-                            ? new Date(payment.paidAt).toLocaleTimeString(
-                                undefined,
-                                {
-                                  hour: '2-digit',
-                                  minute: '2-digit',
-                                },
-                              )
-                            : 'N/A'}
-                        </span>
-                      </div>
-                      {payment.notes && (
+              {debt.payments.map((payment) => {
+                const isAdjustment = payment.paymentType === 'adjustment'
+                return (
+                  <div key={payment.id} className="relative pb-8 last:pb-0">
+                    <div
+                      className={cn(
+                        'absolute -left-[37px] top-2 w-3 h-3 rounded-full border-2 border-ink bg-paper',
+                        isAdjustment && 'bg-forest border-forest',
+                      )}
+                    />
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <div className="font-bold text-lg flex items-center gap-2">
+                          {isAdjustment && (
+                            <HugeiconsIcon
+                              icon={Add01Icon}
+                              className="w-4 h-4 text-forest"
+                            />
+                          )}
+                          {formatCurrency(payment.amount, debt.currency)}
+                        </div>
                         <div
                           className={cn(
-                            'mt-2 text-sm opacity-80 pl-4 border-l-2 border-ink/20',
+                            'font-mono text-xs text-muted-foreground mt-1 flex items-center gap-2',
                           )}
                         >
-                          {payment.notes}
+                          <span>
+                            {payment.paidAt
+                              ? new Date(payment.paidAt).toLocaleDateString(
+                                  undefined,
+                                  {
+                                    month: 'short',
+                                    day: 'numeric',
+                                    year: 'numeric',
+                                  },
+                                )
+                              : 'N/A'}
+                          </span>
+                          <span>·</span>
+                          <span>
+                            {payment.paidAt
+                              ? new Date(payment.paidAt).toLocaleTimeString(
+                                  undefined,
+                                  {
+                                    hour: '2-digit',
+                                    minute: '2-digit',
+                                  },
+                                )
+                              : 'N/A'}
+                          </span>
+                          {isAdjustment && (
+                            <>
+                              <span>·</span>
+                              <span className="text-forest font-mono uppercase tracking-wider">
+                                Adjustment
+                              </span>
+                            </>
+                          )}
                         </div>
-                      )}
+                        {payment.notes && (
+                          <div
+                            className={cn(
+                              'mt-2 text-sm opacity-80 pl-4 border-l-2 border-ink/20',
+                            )}
+                          >
+                            {payment.notes}
+                          </div>
+                        )}
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          alert({
+                            title: 'Delete Entry',
+                            description:
+                              'Are you sure you want to delete this entry?',
+                            onConfirm: async () => {
+                              await deletePayment({ data: payment.id })
+                              router.invalidate()
+                            },
+                          })
+                        }}
+                        className="opacity-50 hover:opacity-100 hover:text-crimson hover:bg-crimson/10 transition-all p-1 h-auto"
+                        title="Delete entry"
+                      >
+                        <HugeiconsIcon
+                          icon={Delete01Icon}
+                          className="w-5 h-5"
+                        />
+                      </Button>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        alert({
-                          title: 'Delete Payment',
-                          description:
-                            'Are you sure you want to delete this payment?',
-                          onConfirm: async () => {
-                            await deletePayment({ data: payment.id })
-                            router.invalidate()
-                          },
-                        })
-                      }}
-                      className="opacity-50 hover:opacity-100 hover:text-crimson hover:bg-crimson/10 transition-all p-1 h-auto"
-                      title="Delete payment"
-                    >
-                      <HugeiconsIcon icon={Delete01Icon} className="w-5 h-5" />
-                    </Button>
                   </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
           )}
 
@@ -289,6 +322,14 @@ function DebtDetails() {
         onOpenChange={setPaymentModalOpen}
         debt={debt}
         remainingAmount={remaining}
+        mode="payment"
+      />
+      <AddPaymentModal
+        open={adjustmentModalOpen}
+        onOpenChange={setAdjustmentModalOpen}
+        debt={debt}
+        remainingAmount={remaining}
+        mode="adjustment"
       />
       <EditDebtModal
         open={editModalOpen}

@@ -1,6 +1,8 @@
 import { useEffect } from 'react'
 import { z } from 'zod'
 
+import { useForm } from '@tanstack/react-form'
+import { useRouter } from '@tanstack/react-router'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -12,10 +14,12 @@ import {
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { useForm } from '@tanstack/react-form'
-import { useRouter } from '@tanstack/react-router'
 import { formatCurrency } from '@/lib/currencies'
+import { cn } from '@/lib/utils'
+import { increaseDebt } from '@/server/functions/debts'
 import { recordPayment } from '@/server/functions/payments'
+
+type ModalMode = 'payment' | 'adjustment'
 
 interface AddPaymentModalProps {
   open: boolean
@@ -25,8 +29,10 @@ interface AddPaymentModalProps {
     amount: number
     currency: string
     description?: string | null
+    type: 'owed_to_me' | 'i_owe'
   }
   remainingAmount: number
+  mode?: ModalMode
 }
 
 export function AddPaymentModal({
@@ -34,30 +40,36 @@ export function AddPaymentModal({
   onOpenChange,
   debt,
   remainingAmount,
+  mode = 'payment',
 }: AddPaymentModalProps) {
   const router = useRouter()
 
+  const isAdjustment = mode === 'adjustment'
+
   const form = useForm({
     defaultValues: {
-      amount: remainingAmount,
+      amount: isAdjustment ? 0 : remainingAmount,
       paidAt: new Date().toISOString().split('T')[0],
       notes: '',
     },
     onSubmit: async ({ value }) => {
-      const payloadData = {
+      const commonData = {
         debtId: debt.id,
         amount: Number(value.amount),
         paidAt: value.paidAt ? new Date(value.paidAt) : undefined,
-        notes: value.notes,
+        notes: value.notes || undefined,
       }
+
       try {
-        await recordPayment({
-          data: payloadData,
-        })
+        if (isAdjustment) {
+          await increaseDebt({ data: commonData })
+        } else {
+          await recordPayment({ data: commonData })
+        }
         await router.invalidate()
         onOpenChange(false)
       } catch (error) {
-        console.error('Failed to record payment', error)
+        console.error('Failed to record', error)
         throw error
       }
     },
@@ -66,22 +78,24 @@ export function AddPaymentModal({
   useEffect(() => {
     if (open) {
       form.reset({
-        amount: remainingAmount,
+        amount: isAdjustment ? 0 : remainingAmount,
         paidAt: new Date().toISOString().split('T')[0],
         notes: '',
       })
     }
-  }, [open, remainingAmount])
+  }, [open, remainingAmount, isAdjustment])
+
+  const title = isAdjustment ? 'Increase Amount' : 'Record Payment'
+  const description = isAdjustment
+    ? `Increase the amount for ${debt.description || 'Debt'}`
+    : `Record a payment for ${formatCurrency(debt.amount, debt.currency)} - ${debt.description || 'Debt'}`
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md bg-zinc-900 border-zinc-800 text-zinc-100">
         <DialogHeader>
-          <DialogTitle>Record Payment</DialogTitle>
-          <DialogDescription>
-            Record a payment for {formatCurrency(debt.amount, debt.currency)} -{' '}
-            {debt.description || 'Debt'}
-          </DialogDescription>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
 
         <form
@@ -94,13 +108,14 @@ export function AddPaymentModal({
         >
           <div className="space-y-2">
             <Label htmlFor="amount">
-              Amount (Remaining:{' '}
-              {formatCurrency(remainingAmount, debt.currency)})
+              Amount{' '}
+              {isAdjustment &&
+                `(Current: ${formatCurrency(debt.amount, debt.currency)})`}
             </Label>
             <form.Field
               name="amount"
               validators={{
-                onChange: z.number().min(0.01, 'Amount must be greater than 0'),
+                onChange: z.number().positive('Amount must be greater than 0'),
               }}
               children={(field) => (
                 <>
@@ -112,6 +127,7 @@ export function AddPaymentModal({
                     onBlur={field.handleBlur}
                     onChange={(e) => field.handleChange(e.target.valueAsNumber)}
                     className="border-zinc-700 bg-zinc-950"
+                    placeholder="0.00"
                   />
                   {field.state.meta.errors.length > 0 ? (
                     <em className="text-red-500 text-xs">
@@ -151,7 +167,11 @@ export function AddPaymentModal({
                   onBlur={field.handleBlur}
                   onChange={(e) => field.handleChange(e.target.value)}
                   className="border-zinc-700 bg-zinc-950 resize-none h-20"
-                  placeholder="Payment method, etc."
+                  placeholder={
+                    isAdjustment
+                      ? 'Why is the amount increasing?'
+                      : 'Payment method, etc.'
+                  }
                 />
               )}
             />
@@ -165,8 +185,12 @@ export function AddPaymentModal({
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={form.state.isSubmitting}>
-              {form.state.isSubmitting ? 'Saving...' : 'Record Payment'}
+            <Button
+              type="submit"
+              disabled={form.state.isSubmitting}
+              className={cn(isAdjustment && 'bg-forest hover:bg-forest/80')}
+            >
+              {form.state.isSubmitting ? 'Saving...' : title}
             </Button>
           </div>
         </form>

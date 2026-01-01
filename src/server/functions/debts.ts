@@ -233,3 +233,46 @@ export const getMonthlyTrend = createServerFn().handler(async () => {
 
   return flatList.sort((a, b) => a.month.localeCompare(b.month))
 })
+
+export const increaseDebt = createServerFn()
+  .inputValidator(
+    zodValidator(
+      z.object({
+        debtId: z.string(),
+        amount: z.number().positive(),
+        notes: z.string().optional(),
+      }),
+    ),
+  )
+  .handler(async ({ data }) => {
+    const { d1 } = await authCheck()
+    const db = getDb(d1)
+
+    const debt = await db.query.debts.findFirst({
+      where: eq(debts.id, data.debtId),
+    })
+
+    if (!debt) throw new Error('Debt not found')
+
+    const paymentId = crypto.randomUUID()
+    const now = new Date()
+
+    await db.insert(payments).values({
+      id: paymentId,
+      debtId: data.debtId,
+      amount: data.amount,
+      paidAt: now,
+      notes: data.notes,
+      paymentType: 'adjustment',
+    })
+
+    await db
+      .update(debts)
+      .set({
+        amount: debt.amount + data.amount,
+        updatedAt: now,
+      })
+      .where(eq(debts.id, data.debtId))
+
+    return { paymentId }
+  })
