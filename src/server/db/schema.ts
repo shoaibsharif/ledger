@@ -28,6 +28,7 @@ export const people = sqliteTable('people', {
   email: text('email'),
   phone: text('phone'),
   notes: text('notes'),
+  currency: text('currency').notNull().default('USD'), // Locked per person
   createdAt: integer('created_at', { mode: 'timestamp' }).default(
     sql`(unixepoch())`,
   ),
