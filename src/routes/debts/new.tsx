@@ -24,6 +24,7 @@ import { useForm } from '@tanstack/react-form'
 import { createFileRoute, Link, useRouter } from '@tanstack/react-router'
 import { useState } from 'react'
 import { z } from 'zod'
+import { currencies, getCurrencySymbol } from '@/lib/currencies'
 
 export const Route = createFileRoute('/debts/new')({
   validateSearch: (search) =>
@@ -44,6 +45,7 @@ function AddDebt() {
 
   const [isCreatingPerson, setIsCreatingPerson] = useState(false)
   const [newPersonName, setNewPersonName] = useState('')
+  const [selectedPersonCurrency, setSelectedPersonCurrency] = useState<string | null>(null)
 
   const form = useForm({
     defaultValues: {
@@ -66,6 +68,11 @@ function AddDebt() {
       await router.navigate({ to: '/' })
     },
   })
+
+  // Get currency for selected person
+  const selectedPerson = people.find(p => p.id === form.getFieldValue('personId'))
+  const lockedCurrency = selectedPerson?.currency
+  const isCurrencyLocked = !!lockedCurrency
 
   const handleCreatePerson = async (setFieldValue: (val: string) => void) => {
     if (!newPersonName.trim()) return
@@ -277,36 +284,41 @@ function AddDebt() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-3">
                   <Label className="font-mono text-xs uppercase tracking-widest opacity-60">
-                    Currency
+                    Currency {isCurrencyLocked && <span className="text-green-600">(locked)</span>}
                   </Label>
-                  <form.Field
-                    name="currency"
-                    children={(field) => (
-                      <Select
-                        value={field.state.value || ''}
-                        onValueChange={(val) =>
-                          field.handleChange(
-                            val as 'USD' | 'EUR' | 'GBP' | 'JPY',
-                          )
-                        }
-                      >
-                        <SelectTrigger
-                          className={cn(
-                            'h-10 border-0 border-b-2 border-ink bg-transparent rounded-none font-mono',
-                            'focus:ring-0',
-                          )}
+                  {isCurrencyLocked ? (
+                    <div className="h-10 flex items-center font-mono text-lg">
+                      {getCurrencySymbol(lockedCurrency)} {lockedCurrency}
+                    </div>
+                  ) : (
+                    <form.Field
+                      name="currency"
+                      children={(field) => (
+                        <Select
+                          value={field.state.value || ''}
+                          onValueChange={(val) =>
+                            field.handleChange(val)
+                          }
                         >
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="USD">USD</SelectItem>
-                          <SelectItem value="EUR">EUR</SelectItem>
-                          <SelectItem value="GBP">GBP</SelectItem>
-                          <SelectItem value="JPY">JPY</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    )}
-                  />
+                          <SelectTrigger
+                            className={cn(
+                              'h-10 border-0 border-b-2 border-ink bg-transparent rounded-none font-mono',
+                              'focus:ring-0',
+                            )}
+                          >
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {currencies.map((c) => (
+                              <SelectItem key={c.code} value={c.code}>
+                                {c.code} - {c.name}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+                    />
+                  )}
                 </div>
                 <div className="space-y-3">
                   <Label className="font-mono text-xs uppercase tracking-widest opacity-60">

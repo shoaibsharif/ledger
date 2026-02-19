@@ -6,7 +6,7 @@ import { eq, sql } from 'drizzle-orm'
 import { z } from 'zod'
 import { validateSession } from '../auth'
 import { getDb } from '../db'
-import { debts, payments } from '../db/schema'
+import { debts, payments, people } from '../db/schema'
 
 async function authCheck() {
   const d1 = env.DB
@@ -94,10 +94,32 @@ export const createDebt = createServerFn()
     const db = getDb(d1)
     const id = crypto.randomUUID()
     const now = new Date()
+
+    // Check if person already has a currency locked
+    const person = await db.query.people.findFirst({
+      where: eq(people.id, data.personId),
+    })
+
+    // Use person's locked currency, or save new currency if this is first entry
+    const currency = person?.currency || data.currency
+
+    // If this is first debt for person, lock their currency
+    if (!person?.currency) {
+      await db
+        .update(people)
+        .set({ currency, updatedAt: now })
+        .where(eq(people.id, data.personId))
+    }
+
     await db.insert(debts).values({
       id,
-      ...data,
+      personId: data.personId,
+      amount: data.amount,
+      currency, // Use locked currency
+      description: data.description,
+      type: data.type,
       status: 'pending',
+      dueDate: data.dueDate,
       createdAt: now,
       updatedAt: now,
     })

@@ -3,6 +3,7 @@ export const currencies = [
   { code: "EUR", symbol: "€", name: "Euro" },
   { code: "GBP", symbol: "£", name: "British Pound" },
   { code: "PKR", symbol: "₨", name: "Pakistani Rupee" },
+  { code: "BDT", symbol: "৳", name: "Bangladeshi Taka" },
   { code: "CAD", symbol: "C$", name: "Canadian Dollar" },
   { code: "AUD", symbol: "A$", name: "Australian Dollar" },
   { code: "INR", symbol: "₹", name: "Indian Rupee" },
