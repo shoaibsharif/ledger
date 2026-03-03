@@ -7,7 +7,7 @@ import { AddPaymentModal } from '@/components/AddPaymentModal'
 import { EditDebtModal } from '@/components/EditDebtModal'
 import { Button } from '@/components/ui/button'
 import { LoadingSpinner } from '@/components/ui/loading'
-import { formatCurrency } from '@/lib/currencies'
+import { formatCurrency, getCurrencySymbol } from '@/lib/currencies'
 import { cn } from '@/lib/utils'
 import { useAlertDialog } from '@/lib/alert-dialog'
 import { getDebt } from '@/server/functions/debts'
@@ -77,7 +77,7 @@ function DebtDetails() {
             )}
           >
             <span className="text-[0.35em] font-bold opacity-40 -translate-y-[0.5em] mr-1">
-              {formatCurrency(0, debt.currency).replace(/[0-9.,\s]/g, '')}
+              {getCurrencySymbol(debt.currency)}
             </span>
             {formatCurrency(remaining, debt.currency).replace(/[^0-9.,]/g, '')}
           </h1>
