@@ -11,6 +11,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { LoadingIcon } from '@/components/ui/loading'
 import {
   Select,
   SelectContent,
@@ -48,6 +49,7 @@ export function EditDebtModal({
 }: EditDebtModalProps) {
   const router = useRouter()
   const [isCreatingPerson, setIsCreatingPerson] = useState(false)
+  const [isCreatingPersonPending, setIsCreatingPersonPending] = useState(false)
   const [newPersonName, setNewPersonName] = useState('')
 
   const form = useForm({
@@ -94,7 +96,8 @@ export function EditDebtModal({
   }, [open, debt])
 
   const handleCreatePerson = async (setFieldValue: (val: string) => void) => {
-    if (!newPersonName.trim()) return
+    if (!newPersonName.trim() || isCreatingPersonPending) return
+    setIsCreatingPersonPending(true)
     try {
       const { id } = await createPerson({ data: { name: newPersonName } })
       await router.invalidate()
@@ -103,6 +106,8 @@ export function EditDebtModal({
       setNewPersonName('')
     } catch (error) {
       console.error('Failed to create person', error)
+    } finally {
+      setIsCreatingPersonPending(false)
     }
   }
 
@@ -222,6 +227,7 @@ export function EditDebtModal({
                       <div className="py-6">
                         <Input
                           autoFocus
+                          disabled={isCreatingPersonPending}
                           value={newPersonName}
                           onChange={(e) => setNewPersonName(e.target.value)}
                           onKeyDown={(e) => {
@@ -236,10 +242,16 @@ export function EditDebtModal({
                       </div>
                       <DialogFooter>
                         <Button
+                          type="button"
+                          disabled={isCreatingPersonPending}
                           onClick={() => handleCreatePerson(field.handleChange)}
                           className="heavy-border font-bold uppercase text-xs"
                         >
-                          Create
+                          <span className="inline-grid size-4 place-items-center">
+                            {isCreatingPersonPending && <LoadingIcon />}
+                          </span>
+                          <span>Create</span>
+                          <span className="size-4" aria-hidden="true" />
                         </Button>
                       </DialogFooter>
                     </DialogContent>
@@ -307,16 +319,27 @@ export function EditDebtModal({
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => onOpenChange(false)}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" disabled={form.state.isSubmitting}>
-              {form.state.isSubmitting ? 'Saving...' : 'Save Changes'}
-            </Button>
+            <form.Subscribe selector={(state) => state.isSubmitting}>
+              {(isSubmitting) => (
+                <>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    disabled={isSubmitting}
+                    onClick={() => onOpenChange(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={isSubmitting}>
+                    <span className="inline-grid size-4 place-items-center">
+                      {isSubmitting && <LoadingIcon />}
+                    </span>
+                    <span>Save Changes</span>
+                    <span className="size-4" aria-hidden="true" />
+                  </Button>
+                </>
+              )}
+            </form.Subscribe>
           </div>
         </form>
       </DialogContent>

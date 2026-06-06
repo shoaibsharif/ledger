@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { LoadingIcon } from '@/components/ui/loading'
 import { checkUserExists, register } from '@/server/functions/auth'
 import { useForm } from '@tanstack/react-form'
 import { createFileRoute, redirect, useRouter } from '@tanstack/react-router'
@@ -135,12 +136,21 @@ function Register() {
                   {error}
                 </div>
               )}
-              <Button
-                type="submit"
-                className="w-full h-14 font-bold uppercase tracking-widest text-sm heavy-border bg-ink text-paper hover:bg-ink/90"
-              >
-                Create Account
-              </Button>
+              <form.Subscribe selector={(state) => state.isSubmitting}>
+                {(isSubmitting) => (
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className="w-full h-14 font-bold uppercase tracking-widest text-sm heavy-border bg-ink text-paper hover:bg-ink/90"
+                  >
+                    <span className="inline-grid size-4 place-items-center">
+                      {isSubmitting && <LoadingIcon />}
+                    </span>
+                    <span>Create Account</span>
+                    <span className="size-4" aria-hidden="true" />
+                  </Button>
+                )}
+              </form.Subscribe>
             </form>
           </div>
         </div>

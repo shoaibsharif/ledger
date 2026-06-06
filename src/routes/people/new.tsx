@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { LoadingIcon } from '@/components/ui/loading'
 import { Textarea } from '@/components/ui/textarea'
 import { createPerson } from '@/server/functions/people'
 import { useForm } from '@tanstack/react-form'
@@ -144,13 +145,21 @@ function AddPerson() {
                 >
                   Cancel
                 </Link>
-                <Button
-                  type="submit"
-                  disabled={form.state.isSubmitting}
-                  className="heavy-border font-bold uppercase text-xs bg-ink text-paper hover:bg-ink/90"
-                >
-                  {form.state.isSubmitting ? 'Saving...' : 'Create Contact'}
-                </Button>
+                <form.Subscribe selector={(state) => state.isSubmitting}>
+                  {(isSubmitting) => (
+                    <Button
+                      type="submit"
+                      disabled={isSubmitting}
+                      className="heavy-border font-bold uppercase text-xs bg-ink text-paper hover:bg-ink/90"
+                    >
+                      <span className="inline-grid size-4 place-items-center">
+                        {isSubmitting && <LoadingIcon />}
+                      </span>
+                      <span>Create Contact</span>
+                      <span className="size-4" aria-hidden="true" />
+                    </Button>
+                  )}
+                </form.Subscribe>
               </div>
             </form>
           </div>

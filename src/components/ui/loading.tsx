@@ -14,6 +14,15 @@ export function LoadingSpinner({ className }: { className?: string }) {
   )
 }
 
+export function LoadingIcon({ className }: { className?: string }) {
+  return (
+    <span
+      aria-hidden="true"
+      className={`inline-block size-4 animate-spin rounded-full border-2 border-current border-t-transparent ${className || ''}`}
+    />
+  )
+}
+
 export function LoadingPage() {
   return (
     <div className="min-h-screen bg-paper flex items-center justify-center">

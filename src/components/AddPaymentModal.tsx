@@ -13,6 +13,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { LoadingIcon } from '@/components/ui/loading'
 import { Textarea } from '@/components/ui/textarea'
 import { formatCurrency } from '@/lib/currencies'
 import { cn } from '@/lib/utils'
@@ -178,20 +179,31 @@ export function AddPaymentModal({
           </div>
 
           <div className="flex justify-end gap-2 pt-2">
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => onOpenChange(false)}
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={form.state.isSubmitting}
-              className={cn(isAdjustment && 'bg-forest hover:bg-forest/80')}
-            >
-              {form.state.isSubmitting ? 'Saving...' : title}
-            </Button>
+            <form.Subscribe selector={(state) => state.isSubmitting}>
+              {(isSubmitting) => (
+                <>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    disabled={isSubmitting}
+                    onClick={() => onOpenChange(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className={cn(isAdjustment && 'bg-forest hover:bg-forest/80')}
+                  >
+                    <span className="inline-grid size-4 place-items-center">
+                      {isSubmitting && <LoadingIcon />}
+                    </span>
+                    <span>{title}</span>
+                    <span className="size-4" aria-hidden="true" />
+                  </Button>
+                </>
+              )}
+            </form.Subscribe>
           </div>
         </form>
       </DialogContent>

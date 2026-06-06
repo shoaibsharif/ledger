@@ -8,6 +8,7 @@ import {
 } from '@/components/ui/dialog'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { LoadingIcon } from '@/components/ui/loading'
 import {
     Select,
     SelectContent,
@@ -44,6 +45,7 @@ function AddDebt() {
   const router = useRouter()
 
   const [isCreatingPerson, setIsCreatingPerson] = useState(false)
+  const [isCreatingPersonPending, setIsCreatingPersonPending] = useState(false)
   const [newPersonName, setNewPersonName] = useState('')
   const [selectedPersonCurrency, setSelectedPersonCurrency] = useState<string | null>(null)
 
@@ -75,7 +77,8 @@ function AddDebt() {
   const isCurrencyLocked = !!lockedCurrency
 
   const handleCreatePerson = async (setFieldValue: (val: string) => void) => {
-    if (!newPersonName.trim()) return
+    if (!newPersonName.trim() || isCreatingPersonPending) return
+    setIsCreatingPersonPending(true)
     try {
       const { id } = await createPerson({ data: { name: newPersonName } })
       await router.invalidate()
@@ -84,6 +87,8 @@ function AddDebt() {
       setNewPersonName('')
     } catch (error) {
       console.error('Failed to create person', error)
+    } finally {
+      setIsCreatingPersonPending(false)
     }
   }
 
@@ -252,6 +257,7 @@ function AddDebt() {
                           <div className="py-6">
                             <Input
                               autoFocus
+                              disabled={isCreatingPersonPending}
                               value={newPersonName}
                               onChange={(e) => setNewPersonName(e.target.value)}
                               onKeyDown={(e) => {
@@ -266,12 +272,18 @@ function AddDebt() {
                           </div>
                           <DialogFooter>
                             <Button
+                              type="button"
+                              disabled={isCreatingPersonPending}
                               onClick={() =>
                                 handleCreatePerson(field.handleChange)
                               }
                               className="heavy-border font-bold uppercase text-xs"
                             >
-                              Create
+                              <span className="inline-grid size-4 place-items-center">
+                                {isCreatingPersonPending && <LoadingIcon />}
+                              </span>
+                              <span>Create</span>
+                              <span className="size-4" aria-hidden="true" />
                             </Button>
                           </DialogFooter>
                         </DialogContent>
@@ -363,24 +375,29 @@ function AddDebt() {
             </div>
 
             <div className="pt-4">
-              <Button
-                type="submit"
-                disabled={form.state.isSubmitting}
-                className={cn(
-                  'w-full h-14 font-bold uppercase tracking-widest text-sm heavy-border',
-                  'bg-ink text-paper hover:bg-ink/90 transition-colors',
-                  'disabled:opacity-50',
+              <form.Subscribe selector={(state) => state.isSubmitting}>
+                {(isSubmitting) => (
+                  <Button
+                    type="submit"
+                    disabled={isSubmitting}
+                    className={cn(
+                      'w-full h-14 font-bold uppercase tracking-widest text-sm heavy-border',
+                      'bg-ink text-paper hover:bg-ink/90 transition-colors',
+                      'disabled:opacity-50',
+                    )}
+                  >
+                    <span className="inline-grid size-4 place-items-center">
+                      {isSubmitting && <LoadingIcon />}
+                    </span>
+                    <span>Record Entry</span>
+                    <span className="inline-grid size-4 place-items-center">
+                      {!isSubmitting && (
+                        <HugeiconsIcon icon={Tick02Icon} className="w-4 h-4" />
+                      )}
+                    </span>
+                  </Button>
                 )}
-              >
-                {form.state.isSubmitting ? (
-                  <span className="animate-pulse font-mono">Processing...</span>
-                ) : (
-                  <span className="flex items-center justify-center gap-2">
-                    Record Entry
-                    <HugeiconsIcon icon={Tick02Icon} className="w-4 h-4" />
-                  </span>
-                )}
-              </Button>
+              </form.Subscribe>
             </div>
           </div>
         </div>
