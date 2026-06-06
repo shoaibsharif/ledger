@@ -29,6 +29,13 @@
       "when": 1767303732990,
       "tag": "0003_quick_scrambler",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1780743442775,
+      "tag": "0004_short_quasar",
+      "breakpoints": true
     }
   ]
 }

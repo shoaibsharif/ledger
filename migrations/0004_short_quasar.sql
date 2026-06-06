@@ -1,0 +1,1 @@
+ALTER TABLE `people` ADD `currency` text DEFAULT 'USD' NOT NULL;
