@@ -63,7 +63,7 @@ function AddDebt() {
         data: {
           ...value,
           amount: Number(value.amount),
-          dueDate: value.dueDate ? new Date(value.dueDate) : undefined,
+          dueDate: value.dueDate || undefined,
         },
       })
       router.invalidate()

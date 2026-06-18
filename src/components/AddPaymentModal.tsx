@@ -16,6 +16,7 @@ import { Label } from '@/components/ui/label'
 import { LoadingIcon } from '@/components/ui/loading'
 import { Textarea } from '@/components/ui/textarea'
 import { formatCurrency } from '@/lib/currencies'
+import { todayDateString } from '@/lib/date'
 import { cn } from '@/lib/utils'
 import { increaseDebt } from '@/server/functions/debts'
 import { recordPayment } from '@/server/functions/payments'
@@ -50,14 +51,14 @@ export function AddPaymentModal({
   const form = useForm({
     defaultValues: {
       amount: isAdjustment ? 0 : remainingAmount,
-      paidAt: new Date().toISOString().split('T')[0],
+      paidAt: todayDateString(),
       notes: '',
     },
     onSubmit: async ({ value }) => {
       const commonData = {
         debtId: debt.id,
         amount: Number(value.amount),
-        paidAt: value.paidAt ? new Date(value.paidAt) : undefined,
+        paidAt: value.paidAt || undefined,
         notes: value.notes || undefined,
       }
 
@@ -80,7 +81,7 @@ export function AddPaymentModal({
     if (open) {
       form.reset({
         amount: isAdjustment ? 0 : remainingAmount,
-        paidAt: new Date().toISOString().split('T')[0],
+        paidAt: todayDateString(),
         notes: '',
       })
     }
