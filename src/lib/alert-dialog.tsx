@@ -6,6 +6,8 @@ import {
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
 import { LoadingIcon } from '@/components/ui/loading'
@@ -81,25 +83,24 @@ export function AlertDialogProvider({
         open={config.open}
         onOpenChange={(open) => !open && !isConfirming && close()}
       >
-        <AlertDialogContent>
-          {config.title && <AlertDialogTitle>{config.title}</AlertDialogTitle>}
-          {config.description && (
-            <AlertDialogDescription>
-              {config.description}
-            </AlertDialogDescription>
-          )}
-          <div className="flex gap-2 justify-center">
+        <AlertDialogContent size="sm">
+          <AlertDialogHeader>
+            {config.title && <AlertDialogTitle>{config.title}</AlertDialogTitle>}
+            {config.description && (
+              <AlertDialogDescription>
+                {config.description}
+              </AlertDialogDescription>
+            )}
+          </AlertDialogHeader>
+          <AlertDialogFooter>
             <AlertDialogCancel onClick={handleCancel}>
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction disabled={isConfirming} onClick={handleConfirm}>
-              <span className="inline-grid size-4 place-items-center">
-                {isConfirming && <LoadingIcon />}
-              </span>
-              <span>Confirm</span>
-              <span className="size-4" aria-hidden="true" />
+              {isConfirming && <LoadingIcon />}
+              Confirm
             </AlertDialogAction>
-          </div>
+          </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </AlertDialogContext.Provider>

@@ -11,6 +11,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog'
+import { DatePicker } from '@/components/ui/date-picker'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { LoadingIcon } from '@/components/ui/loading'
@@ -146,13 +147,13 @@ export function AddPaymentModal({
             <form.Field
               name="paidAt"
               children={(field) => (
-                <Input
+                <DatePicker
                   id="paidAt"
-                  type="date"
                   value={field.state.value}
+                  onChange={(val) => field.handleChange(val)}
                   onBlur={field.handleBlur}
-                  onChange={(e) => field.handleChange(e.target.value)}
-                  className="border-zinc-700 bg-zinc-950"
+                  triggerClassName="border-zinc-700 bg-zinc-950"
+                  clearable={false}
                 />
               )}
             />

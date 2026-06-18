@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { z } from 'zod'
 
 import { Button } from '@/components/ui/button'
+import { DatePicker } from '@/components/ui/date-picker'
 import {
   Dialog,
   DialogContent,
@@ -292,11 +293,10 @@ export function EditDebtModal({
               <form.Field
                 name="dueDate"
                 children={(field) => (
-                  <Input
-                    type="date"
+                  <DatePicker
                     value={field.state.value}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    className="border-zinc-700 bg-zinc-950"
+                    onChange={(val) => field.handleChange(val)}
+                    triggerClassName="border-zinc-700 bg-zinc-950"
                   />
                 )}
               />

@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button'
+import { DatePicker } from '@/components/ui/date-picker'
 import {
     Dialog,
     DialogContent,
@@ -339,13 +340,12 @@ function AddDebt() {
                   <form.Field
                     name="dueDate"
                     children={(field) => (
-                      <Input
-                        type="date"
+                      <DatePicker
                         value={field.state.value}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                        className={cn(
+                        onChange={(val) => field.handleChange(val)}
+                        triggerClassName={cn(
                           'h-10 border-0 border-b-2 border-ink bg-transparent rounded-none font-mono',
-                          'focus:ring-0',
+                          'focus:ring-0 px-2',
                         )}
                       />
                     )}
