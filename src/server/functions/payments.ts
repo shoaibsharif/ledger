@@ -4,9 +4,14 @@ import { zodValidator } from '@tanstack/zod-adapter'
 import { env } from 'cloudflare:workers'
 import { eq } from 'drizzle-orm'
 import { z } from 'zod'
+import { parseLocalDate, todayDateString } from '@/lib/date'
 import { validateSession } from '../auth'
 import { getDb } from '../db'
 import { debts, payments } from '../db/schema'
+
+const dateString = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, 'Expected YYYY-MM-DD')
 
 async function authCheck() {
   const d1 = env.DB
@@ -23,7 +28,7 @@ export const recordPayment = createServerFn()
       z.object({
         debtId: z.string(),
         amount: z.number(),
-        paidAt: z.date().optional(),
+        paidAt: dateString.optional(),
         notes: z.string().optional(),
         paymentType: z.enum(['payment', 'adjustment']).optional(),
       }),
@@ -35,12 +40,13 @@ export const recordPayment = createServerFn()
     const id = crypto.randomUUID()
 
     const paymentType = data.paymentType ?? 'payment'
+    const paidAt = parseLocalDate(data.paidAt ?? todayDateString())
 
     await db.insert(payments).values({
       id,
       debtId: data.debtId,
       amount: data.amount,
-      paidAt: data.paidAt,
+      paidAt,
       notes: data.notes,
       paymentType,
     })

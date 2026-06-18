@@ -4,9 +4,14 @@ import { zodValidator } from '@tanstack/zod-adapter'
 import { env } from 'cloudflare:workers'
 import { eq, sql } from 'drizzle-orm'
 import { z } from 'zod'
+import { parseLocalDate, todayDateString } from '@/lib/date'
 import { validateSession } from '../auth'
 import { getDb } from '../db'
 import { debts, payments, people } from '../db/schema'
+
+const dateString = z
+  .string()
+  .regex(/^\d{4}-\d{2}-\d{2}$/, 'Expected YYYY-MM-DD')
 
 async function authCheck() {
   const d1 = env.DB
@@ -85,7 +90,7 @@ export const createDebt = createServerFn()
         currency: z.string(),
         description: z.string().optional(),
         type: z.enum(['owed_to_me', 'i_owe']),
-        dueDate: z.date().optional(),
+        dueDate: dateString.optional(),
       }),
     ),
   )
@@ -119,7 +124,7 @@ export const createDebt = createServerFn()
       description: data.description,
       type: data.type,
       status: 'pending',
-      dueDate: data.dueDate,
+      dueDate: data.dueDate ? parseLocalDate(data.dueDate) : undefined,
       createdAt: now,
       updatedAt: now,
     })
@@ -137,17 +142,19 @@ export const updateDebt = createServerFn()
         description: z.string().optional(),
         type: z.enum(['owed_to_me', 'i_owe']).optional(),
         status: z.enum(['pending', 'partial', 'settled']).optional(),
-        dueDate: z.date().optional(),
+        dueDate: dateString.optional(),
       }),
     ),
   )
   .handler(async ({ data }) => {
     const { d1 } = await authCheck()
     const db = getDb(d1)
+    const { dueDate, ...rest } = data
     await db
       .update(debts)
       .set({
-        ...data,
+        ...rest,
+        ...(dueDate !== undefined && { dueDate: parseLocalDate(dueDate) }),
         updatedAt: new Date(),
       })
       .where(eq(debts.id, data.id))
@@ -262,7 +269,7 @@ export const increaseDebt = createServerFn()
       z.object({
         debtId: z.string(),
         amount: z.number().positive(),
-        paidAt: z.date().optional(),
+        paidAt: dateString.optional(),
         notes: z.string().optional(),
       }),
     ),
@@ -284,7 +291,7 @@ export const increaseDebt = createServerFn()
       id: paymentId,
       debtId: data.debtId,
       amount: data.amount,
-      paidAt: data.paidAt ?? now,
+      paidAt: parseLocalDate(data.paidAt ?? todayDateString()),
       notes: data.notes,
       paymentType: 'adjustment',
     })

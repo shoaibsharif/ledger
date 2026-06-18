@@ -72,7 +72,7 @@ export function EditDebtModal({
           currency: value.currency,
           description: value.description || undefined,
           type: value.type,
-          dueDate: value.dueDate ? new Date(value.dueDate) : undefined,
+          dueDate: value.dueDate || undefined,
         },
       })
       await router.invalidate()

@@ -222,18 +222,6 @@ function DebtDetails() {
                                 )
                               : 'N/A'}
                           </span>
-                          <span>·</span>
-                          <span>
-                            {payment.paidAt
-                              ? new Date(payment.paidAt).toLocaleTimeString(
-                                  undefined,
-                                  {
-                                    hour: '2-digit',
-                                    minute: '2-digit',
-                                  },
-                                )
-                              : 'N/A'}
-                          </span>
                           {isAdjustment && (
                             <>
                               <span>·</span>
