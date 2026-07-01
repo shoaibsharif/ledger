@@ -6,7 +6,7 @@ import { HugeiconsIcon } from '@hugeicons/react'
 import { AddPaymentModal } from '@/components/AddPaymentModal'
 import { EditDebtModal } from '@/components/EditDebtModal'
 import { Button } from '@/components/ui/button'
-import { LoadingSpinner } from '@/components/ui/loading'
+import { LoadingIcon, LoadingSpinner } from '@/components/ui/loading'
 import { formatCurrency } from '@/lib/currencies'
 import { cn } from '@/lib/utils'
 import { useAlertDialog } from '@/lib/alert-dialog'
@@ -27,6 +27,9 @@ export const Route = createFileRoute('/debts/$debtId')({
 
 function DebtDetails() {
   const { debt, people } = Route.useLoaderData()
+  const isFetching = Route.useMatch({
+    select: (m) => m.isFetching === 'loader',
+  })
   const [paymentModalOpen, setPaymentModalOpen] = useState(false)
   const [adjustmentModalOpen, setAdjustmentModalOpen] = useState(false)
   const [editModalOpen, setEditModalOpen] = useState(false)
@@ -156,10 +159,11 @@ function DebtDetails() {
         <div className="p-6 md:p-12">
           <h2
             className={cn(
-              'text-3xl font-black font-display tracking-tighter mb-2',
+              'text-3xl font-black font-display tracking-tighter mb-2 flex items-center gap-2',
             )}
           >
             HISTORY
+            {isFetching && <LoadingIcon className="w-5 h-5 opacity-60" />}
           </h2>
           <div className="font-mono text-xs opacity-60 uppercase tracking-wider mb-8">
             {debt.payments.length} payment
