@@ -1,3 +1,6 @@
+import { Loading03Icon } from "@hugeicons/core-free-icons"
+import { HugeiconsIcon } from "@hugeicons/react"
+import clsx from "clsx"
 
 
 export function LoadingSpinner({ className }: { className?: string }) {
@@ -16,10 +19,7 @@ export function LoadingSpinner({ className }: { className?: string }) {
 
 export function LoadingIcon({ className }: { className?: string }) {
   return (
-    <span
-      aria-hidden="true"
-      className={`inline-block size-4 animate-spin rounded-full border-2 border-current border-t-transparent ${className || ''}`}
-    />
+    <HugeiconsIcon icon={Loading03Icon} className={clsx("animate-spin", className)} />
   )
 }
 
